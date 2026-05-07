@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como criar e salvar um agente — Claude Managed Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #f7f5f0;
+  --bg2:       #efecea;
+  --surface:   #ffffff;
+  --border:    #e0dbd4;
+  --border2:   #ccc7be;
+  --text:      #1e1c18;
+  --muted:     #7a7468;
+  --accent:    #2a6b4f;
+  --accent-lt: #d8ede5;
+  --accent2:   #8b4513;
+  --amber:     #c17b2a;
+  --amber-lt:  #fdf0db;
+  --blue:      #1e4fa0;
+  --blue-lt:   #dde8f8;
+  --red:       #b83232;
+  --red-lt:    #fbe8e8;
+  --step1:     #2a6b4f;
+  --step2:     #1e4fa0;
+  --step3:     #8b4513;
+  --step4:     #6b2a6b;
+  --step4-lt:  #f0ddf0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--text);
+  color: #f7f5f0;
+  padding: 56px 48px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(42,107,79,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6ee7b7;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 28px; height: 1px;
+  background: #6ee7b7;
+}
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(28px, 4.5vw, 46px);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  max-width: 640px;
+}
+.hero h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: #a3e6c8;
+}
+.hero p {
+  color: #b0a99f;
+  font-size: 15px;
+  font-weight: 300;
+  max-width: 540px;
+}
+.hero-meta {
+  margin-top: 28px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #b0a99f;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  gap: 0;
+}
+.prog-step {
+  flex: 1;
+  padding: 14px 0 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prog-step.active { color: var(--text); border-bottom-color: var(--accent); }
+.prog-step:hover:not(.active) { color: var(--text); }
+.prog-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--bg2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  margin-right: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+.prog-step.active .prog-num {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── MAIN ── */
+.main { max-width: 900px; margin: 0 auto; padding: 0 32px 100px; }
+
+/* ── STEP SECTION ── */
+.step-section {
+  margin-top: 60px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.step-section.visible { opacity: 1; transform: translateY(0); }
+
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.step-badge {
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+.s1 .step-badge { background: var(--accent-lt); color: var(--step1); }
+.s2 .step-badge { background: var(--blue-lt);   color: var(--step2); }
+.s3 .step-badge { background: var(--amber-lt);  color: var(--step3); }
+.s4 .step-badge { background: var(--step4-lt);  color: var(--step4); }
+
+.step-title-wrap h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.step-title-wrap p { font-size: 14px; color: var(--muted); font-weight: 300; }
+
+/* ── CONCEPT CARD ── */
+.concept {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.concept::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+.s1 .concept::before { background: var(--step1); }
+.s2 .concept::before { background: var(--step2); }
+.s3 .concept::before { background: var(--step3); }
+.s4 .concept::before { background: var(--step4); }
+
+.concept-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.s1 .concept-label { color: var(--step1); }
+.s2 .concept-label { color: var(--step2); }
+.s3 .concept-label { color: var(--step3); }
+.s4 .concept-label { color: var(--step4); }
+
+.concept h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.concept p, .concept li {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.concept ul { padding-left: 18px; }
+.concept li { margin-bottom: 4px; }
+.concept li strong { color: var(--text); font-weight: 500; }
+
+/* ── FIELDS GRID ── */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.field {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.field-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.field-value {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+.field-value.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+.field-value.quote {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 13px;
+  color: var(--muted);
+  border-left: 2px solid var(--border2);
+  padding-left: 10px;
+}
+
+/* ── CODE BLOCK ── */
+.code-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.code-header {
+  background: var(--text);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #6ee7b7;
+  letter-spacing: 0.08em;
+}
+.code-dots { display: flex; gap: 6px; }
+.code-dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+pre {
+  background: #f9f7f4;
+  padding: 22px 22px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  border-top: 1px solid var(--border);
+}
+.kw  { color: #7c3aed; font-weight: 600; }
+.fn  { color: #1e4fa0; }
+.str { color: #2a6b4f; }
+.cm  { color: #9ca3af; font-style: italic; }
+.key { color: #b83232; }
+.val { color: #c17b2a; }
+.ret { color: #6b2a6b; }
+.num { color: #1e4fa0; }
+
+/* ── OUTPUT BOX ── */
+.output-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+.output-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.output-label::before {
+  content: '▶';
+  font-size: 8px;
+  color: var(--accent);
+}
+.json-block {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.jk  { color: #1e4fa0; }
+.jv  { color: #2a6b4f; }
+.js  { color: #b83232; }
+.jn  { color: #c17b2a; }
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.callout.tip   { background: var(--accent-lt); border: 1px solid #b8dece; }
+.callout.warn  { background: var(--amber-lt);  border: 1px solid #e8c98a; }
+.callout.info  { background: var(--blue-lt);   border: 1px solid #b0c8f0; }
+.callout.done  { background: #f0fdf4;           border: 1px solid #a7f3d0; }
+.callout-icon  { font-size: 18px; flex-shrink: 0; line-height: 1.3; }
+.callout strong { font-weight: 600; display: block; margin-bottom: 2px; }
+.callout.tip strong   { color: var(--step1); }
+.callout.warn strong  { color: var(--step3); }
+.callout.info strong  { color: var(--step2); }
+.callout.done strong  { color: #15803d; }
+
+/* ── DIVIDER ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 48px 0 0;
+  color: var(--border2);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── SAVE CARD ── */
+.save-card {
+  background: var(--text);
+  color: #f7f5f0;
+  border-radius: 16px;
+  padding: 32px 32px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.save-card::before {
+  content: '';
+  position: absolute;
+  right: -40px; bottom: -40px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(110,231,183,0.12) 0%, transparent 70%);
+}
+.save-card h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #f7f5f0;
+}
+.save-card p { font-size: 13px; color: #9a9288; margin-bottom: 22px; }
+.id-pill {
+  background: rgba(110,231,183,0.12);
+  border: 1px solid rgba(110,231,183,0.3);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #6ee7b7;
+  margin-bottom: 16px;
+  word-break: break-all;
+}
+.id-label { font-size: 10px; color: #6b665e; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.id-value { font-size: 15px; font-weight: 600; }
+.usage-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.usage-item {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.usage-item .u-label { font-size: 10px; color: #6b665e; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+.usage-item .u-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #c4bdb6; }
+
+/* ── FOOTER ── */
+.foot {
+  margin-top: 72px;
+  padding: 28px 48px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.foot a { color: var(--accent); text-decoration: none; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-eyebrow { animation: fadeUp 0.5s ease 0.1s both; }
+.hero h1      { animation: fadeUp 0.5s ease 0.2s both; }
+.hero p       { animation: fadeUp 0.5s ease 0.3s both; }
+.hero-meta    { animation: fadeUp 0.5s ease 0.4s both; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Tutorial passo a passo</div>
+  <h1>Construir e <em>salvar</em> um agente<br>com Claude Managed Agents</h1>
+  <p>Exemplo completo: do system prompt ao <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(255,255,255,0.08);padding:2px 7px;border-radius:4px;">agent_id</code> salvo, pronto para reutilizar em qualquer sessão.</p>
+  <div class="hero-meta">
+    <span class="badge">Python SDK</span>
+    <span class="badge">managed-agents-2026-04-01</span>
+    <span class="badge">Agente de suporte técnico</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="prog-step active" onclick="scrollTo('s1')"><span class="prog-num">1</span>Instalar SDK</div>
+  <div class="prog-step" onclick="scrollTo('s2')"><span class="prog-num">2</span>Definir agente</div>
+  <div class="prog-step" onclick="scrollTo('s3')"><span class="prog-num">3</span>Criar ambiente</div>
+  <div class="prog-step" onclick="scrollTo('s4')"><span class="prog-num">4</span>Salvar &amp; usar</div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════════
+       PASSO 1 — Instalar e configurar o SDK
+  ══════════════════════════════════════════ -->
+  <div class="step-section s1" id="s1">
+    <div class="step-header">
+      <div class="step-badge">01</div>
+      <div class="step-title-wrap">
+        <h2>Instalar o SDK e configurar a chave</h2>
+        <p>Pré-requisito: Python 3.8+ e uma conta no Claude Platform com acesso ao Managed Agents (beta)</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-label">O que é necessário</div>
+      <h3>Antes de começar</h3>
+      <ul>
+        <li><strong>Conta no Claude Platform</strong> — acesse platform.claude.com</li>
+        <li><strong>API Key</strong> — gere em Settings → API Keys</li>
+        <li><strong>Acesso ao beta</strong> — o SDK aplica o header automaticamente</li>
+        <li><strong>Python 3.8+</strong> — com pip disponível</li>
+      </ul>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">terminal</div>
+      </div>
+      <pre><span class="cm"># Instalar o SDK oficial da Anthropic</span>
+pip install anthropic
+
+<span class="cm"># Configurar a chave de API como variável de ambiente</span>
+export ANTHROPIC_API_KEY=<span class="str">"sk-ant-..."</span></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">python — verificar conexão</div>
+      </div>
+      <pre><span class="kw">from</span> anthropic <span class="kw">import</span> Anthropic
+
+<span class="cm"># Inicializa o client — lê ANTHROPIC_API_KEY do ambiente</span>
+client = <span class="fn">Anthropic</span>()
+
+<span class="cm"># Teste rápido: listar agentes existentes</span>
+agents = client.beta.agents.<span class="fn">list</span>()
+<span class="fn">print</span>(<span class="str">f"Agentes existentes: </span><span class="val">{len(agents.data)}</span><span class="str">"</span>)</pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div><strong>Dica de segurança</strong>Nunca coloque a API key diretamente no código. Use sempre variáveis de ambiente ou um gerenciador de segredos como o python-dotenv.</div>
+    </div>
+  </div>
+
+  <div class="divider">passo 2</div>
+
+  <!-- ══════════════════════════════════════════
+       PASSO 2 — Definir o agente
+  ══════════════════════════════════════════ -->
+  <div class="step-section s2" id="s2">
+    <div class="step-header">
+      <div class="step-badge">02</div>
+      <div class="step-title-wrap">
+        <h2>Definir o agente</h2>
+        <p>O agente é criado uma única vez e referenciado por ID — como um "template" reutilizável</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-label">Anatomia de um agente</div>
+      <h3>O que você vai configurar</h3>
+      <ul>
+        <li><strong>name</strong> — nome legível para identificar o agente no Console</li>
+        <li><strong>model</strong> — qual modelo Claude vai usar (sonnet é o equilibrado)</li>
+        <li><strong>system</strong> — o system prompt: define personalidade, regras e objetivo</li>
+        <li><strong>tools</strong> — ferramentas disponíveis; <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:#f0f0f0;padding:1px 5px;border-radius:3px;">agent_toolset_20260401</code> libera bash, arquivos, web search e mais</li>
+      </ul>
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <div class="field-key">name</div>
+        <div class="field-value">Agente de Suporte Técnico</div>
+      </div>
+      <div class="field">
+        <div class="field-key">model</div>
+        <div class="field-value mono">claude-sonnet-4-6</div>
+      </div>
+      <div class="field">
+        <div class="field-key">tools</div>
+        <div class="field-value mono">agent_toolset_20260401</div>
+      </div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <div class="field-key">system prompt</div>
+        <div class="field-value quote">"Você é um agente especializado em suporte técnico. Ao receber um ticket: leia o problema com atenção, pesquise soluções na base de conhecimento, redija uma resposta clara e empática, e registre a resolução. Sempre confirme se o usuário ficou satisfeito antes de fechar o ticket."</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">python — criar o agente</div>
+      </div>
+      <pre><span class="kw">from</span> anthropic <span class="kw">import</span> Anthropic
+
+client = <span class="fn">Anthropic</span>()
+
+<span class="cm"># ✦ Passo central: criar o agente</span>
+agent = client.beta.agents.<span class="fn">create</span>(
+    <span class="key">name</span>=<span class="str">"Agente de Suporte Técnico"</span>,
+    <span class="key">model</span>=<span class="str">"claude-sonnet-4-6"</span>,
+    <span class="key">system</span>=<span class="str">"""Você é um agente especializado em suporte técnico.
+Ao receber um ticket:
+1. Leia o problema com atenção
+2. Pesquise soluções na base de conhecimento
+3. Redija uma resposta clara e empática
+4. Registre a resolução
+Sempre confirme se o usuário ficou satisfeito."""</span>,
+    <span class="key">tools</span>=[{<span class="str">"type"</span>: <span class="str">"agent_toolset_20260401"</span>}]
+)
+
+<span class="cm"># O ID retornado é permanente — guarde-o!</span>
+<span class="fn">print</span>(<span class="str">f"Agente criado com ID: </span><span class="val">{agent.id}</span><span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Versão: </span><span class="val">{agent.version}</span><span class="str">"</span>)</pre>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Saída esperada</div>
+      <div class="json-block">
+Agente criado com ID: <span class="jv">agent_01HqR2k7vXbZ9mNpL3wYcT8f</span>
+Versão: <span class="jn">1</span>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div><strong>Versionamento automático</strong>Cada vez que você atualizar o agente (ex: mudar o system prompt), a Anthropic gera uma nova versão automaticamente. Os campos não alterados são preservados.</div>
+    </div>
+  </div>
+
+  <div class="divider">passo 3</div>
+
+  <!-- ══════════════════════════════════════════
+       PASSO 3 — Criar o ambiente
+  ══════════════════════════════════════════ -->
+  <div class="step-section s3" id="s3">
+    <div class="step-header">
+      <div class="step-badge">03</div>
+      <div class="step-title-wrap">
+        <h2>Criar o ambiente de execução</h2>
+        <p>O ambiente é o container cloud onde o agente vai rodar — separado da definição do agente</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-label">Por que separar agente e ambiente?</div>
+      <h3>Flexibilidade de configuração</h3>
+      <ul>
+        <li><strong>Mesmo agente, ambientes diferentes</strong> — produção com rede restrita, dev com rede aberta</li>
+        <li><strong>Pacotes pré-instalados</strong> — Python, Node.js, Go, ferramentas de sistema</li>
+        <li><strong>Credenciais no vault</strong> — o agente nunca vê tokens; um proxy autenticado faz as chamadas</li>
+        <li><strong>Arquivos montados</strong> — documentos, bases de conhecimento, configs</li>
+      </ul>
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <div class="field-key">name</div>
+        <div class="field-value">ambiente-suporte-prod</div>
+      </div>
+      <div class="field">
+        <div class="field-key">type</div>
+        <div class="field-value mono">cloud</div>
+      </div>
+      <div class="field">
+        <div class="field-key">networking</div>
+        <div class="field-value mono">unrestricted</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">python — criar o ambiente</div>
+      </div>
+      <pre><span class="cm"># Criar o ambiente de execução do agente</span>
+environment = client.beta.environments.<span class="fn">create</span>(
+    <span class="key">name</span>=<span class="str">"ambiente-suporte-prod"</span>,
+    <span class="key">config</span>={
+        <span class="str">"type"</span>: <span class="str">"cloud"</span>,
+        <span class="str">"networking"</span>: {
+            <span class="str">"type"</span>: <span class="str">"unrestricted"</span>  <span class="cm"># acesso à internet</span>
+        }
+    }
+)
+
+<span class="fn">print</span>(<span class="str">f"Ambiente criado: </span><span class="val">{environment.id}</span><span class="str">"</span>)</pre>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Saída esperada</div>
+      <div class="json-block">
+Ambiente criado: <span class="jv">env_09XzP4mKqRt7nSvL2wUcB5e</span>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div><strong>Networking em produção</strong>Para produção real, prefira <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:#fde68a44;padding:1px 5px;border-radius:3px;">"type": "restricted"</code> e liste explicitamente os domínios permitidos. O <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">unrestricted</code> é prático para desenvolvimento e testes.</div>
+    </div>
+  </div>
+
+  <div class="divider">passo 4</div>
+
+  <!-- ══════════════════════════════════════════
+       PASSO 4 — Salvar IDs e usar o agente
+  ══════════════════════════════════════════ -->
+  <div class="step-section s4" id="s4">
+    <div class="step-header">
+      <div class="step-badge">04</div>
+      <div class="step-title-wrap">
+        <h2>Salvar os IDs e usar o agente</h2>
+        <p>Com agent_id e environment_id em mãos, o agente está pronto para sessões ilimitadas</p>
+      </div>
+    </div>
+
+    <!-- SAVE CARD -->
+    <div class="save-card">
+      <h3>✦ Agente salvo com sucesso</h3>
+      <p>Guarde estes dois IDs — eles são permanentes e reutilizáveis</p>
+      <div class="id-pill">
+        <div class="id-label">agent_id</div>
+        <div class="id-value">agent_01HqR2k7vXbZ9mNpL3wYcT8f</div>
+      </div>
+      <div class="id-pill">
+        <div class="id-label">environment_id</div>
+        <div class="id-value">env_09XzP4mKqRt7nSvL2wUcB5e</div>
+      </div>
+      <div class="usage-row">
+        <div class="usage-item">
+          <div class="u-label">Criado em</div>
+          <div class="u-val">2026-05-07T14:32:10Z</div>
+        </div>
+        <div class="usage-item">
+          <div class="u-label">Versão</div>
+          <div class="u-val">1</div>
+        </div>
+        <div class="usage-item">
+          <div class="u-label">Modelo</div>
+          <div class="u-val">claude-sonnet-4-6</div>
+        </div>
+        <div class="usage-item">
+          <div class="u-label">Status</div>
+          <div class="u-val" style="color:#6ee7b7;">● ativo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Código de uso -->
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">python — salvar IDs e lançar sessão</div>
+      </div>
+      <pre><span class="cm"># ── Salvar em variáveis (ou num .env, banco, etc.) ──────────</span>
+AGENT_ID       = <span class="str">"agent_01HqR2k7vXbZ9mNpL3wYcT8f"</span>
+ENVIRONMENT_ID = <span class="str">"env_09XzP4mKqRt7nSvL2wUcB5e"</span>
+
+<span class="cm"># ── Lançar uma sessão usando os IDs salvos ──────────────────</span>
+session = client.beta.sessions.<span class="fn">create</span>(
+    <span class="key">agent_id</span>=AGENT_ID,
+    <span class="key">environment_id</span>=ENVIRONMENT_ID
+)
+
+<span class="cm"># ── Enviar o primeiro evento (mensagem do usuário) ──────────</span>
+<span class="kw">with</span> client.beta.sessions.events.<span class="fn">stream</span>(session.id) <span class="kw">as</span> stream:
+    client.beta.sessions.events.<span class="fn">send</span>(
+        session.id,
+        <span class="key">events</span>=[{
+            <span class="str">"type"</span>: <span class="str">"user.message"</span>,
+            <span class="str">"content"</span>: [{
+                <span class="str">"type"</span>: <span class="str">"text"</span>,
+                <span class="str">"text"</span>: <span class="str">"Ticket #4821: meu login não funciona desde ontem."</span>
+            }]
+        }]
+    )
+
+    <span class="cm"># ── Processar eventos em streaming ──────────────────────────</span>
+    <span class="kw">for</span> event <span class="kw">in</span> stream:
+        <span class="kw">if</span> event.type == <span class="str">"agent.message"</span>:
+            <span class="kw">for</span> block <span class="kw">in</span> event.content:
+                <span class="fn">print</span>(block.text, end=<span class="str">""</span>)
+        <span class="kw">elif</span> event.type == <span class="str">"agent.tool_use"</span>:
+            <span class="fn">print</span>(<span class="str">f"\n[🔧 Usando ferramenta: </span><span class="val">{event.name}</span><span class="str">]"</span>)
+        <span class="kw">elif</span> event.type == <span class="str">"session.status_idle"</span>:
+            <span class="fn">print</span>(<span class="str">"\n\n✅ Agente finalizou."</span>)
+            <span class="kw">break</span></pre>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Saída esperada do agente</div>
+      <div class="json-block">
+<span class="cm">[🔧 Usando ferramenta: web_search]</span>
+<span class="cm">[🔧 Usando ferramenta: bash]</span>
+
+Olá! Analisei o ticket #4821 sobre problema de login.
+
+Identifiquei que sua conta pode estar bloqueada por múltiplas
+tentativas incorretas. Para resolver:
+
+1. Acesse a página de recuperação de senha
+2. Digite seu email cadastrado
+3. Verifique a caixa de entrada (incluindo spam)
+
+Caso o problema persista, posso escalar para o time de
+segurança. O problema foi resolvido?
+
+<span style="color:#15803d">✅ Agente finalizou.</span>
+      </div>
+    </div>
+
+    <!-- Reutilização -->
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">python — reutilizar o mesmo agente (nova sessão)</div>
+      </div>
+      <pre><span class="cm"># O agente foi criado uma vez — use o ID salvo quantas vezes quiser</span>
+nova_sessao = client.beta.sessions.<span class="fn">create</span>(
+    <span class="key">agent_id</span>=<span class="str">"agent_01HqR2k7vXbZ9mNpL3wYcT8f"</span>,   <span class="cm"># mesmo agente</span>
+    <span class="key">environment_id</span>=<span class="str">"env_09XzP4mKqRt7nSvL2wUcB5e"</span>  <span class="cm"># mesmo ambiente</span>
+)
+<span class="cm"># Cada sessão é independente — estado zerado, contexto limpo</span></pre>
+    </div>
+
+    <!-- Atualizar agente -->
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang">python — atualizar o system prompt (gera nova versão)</div>
+      </div>
+      <pre>agent_atualizado = client.beta.agents.<span class="fn">update</span>(
+    <span class="key">agent_id</span>=<span class="str">"agent_01HqR2k7vXbZ9mNpL3wYcT8f"</span>,
+    <span class="key">version</span>=<span class="num">1</span>,   <span class="cm"># versão atual (obrigatório)</span>
+    <span class="key">system</span>=<span class="str">"Novo system prompt com instruções atualizadas..."</span>
+    <span class="cm"># campos omitidos são preservados automaticamente</span>
+)
+<span class="fn">print</span>(<span class="str">f"Nova versão: </span><span class="val">{agent_atualizado.version}</span><span class="str">"</span>)  <span class="cm"># → 2</span></pre>
+    </div>
+
+    <div class="callout done">
+      <div class="callout-icon">✅</div>
+      <div><strong>Agente salvo e funcionando!</strong>Você criou um agente persistente com ID único. Ele pode ser reutilizado em infinitas sessões, atualizado com versionamento automático e monitorado no Claude Console em platform.claude.com.</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<div class="foot">
+  <p>Documentação completa: <a href="https://platform.claude.com/docs/en/managed-agents/overview" target="_blank">platform.claude.com/docs/en/managed-agents</a> · Claude Managed Agents Beta · Anthropic 2026</p>
+</div>
+
+<script>
+// ── Scroll suave para seção ───────────────────────────────
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Observer para animar seções ao entrar na tela ────────
+const sections = document.querySelectorAll('.step-section');
+const steps    = document.querySelectorAll('.prog-step');
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      const id = entry.target.id;
+      const idx = ['s1','s2','s3','s4'].indexOf(id);
+      steps.forEach((s, i) => s.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.15, rootMargin: '-80px 0px -20% 0px' });
+
+sections.forEach(s => io.observe(s));
+
+// Ativar primeiro bloco imediatamente
+setTimeout(() => {
+  sections[0].classList.add('visible');
+}, 100);
+</script>
+</body>
+</html>
