@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Managed Agents — Infográfico</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0eeea;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1a1a2e;
+    --muted: #6b6b88;
+    --purple: #6d3fd6;
+    --purple-bg: rgba(109,63,214,0.07);
+    --teal: #0d9488;
+    --teal-bg: rgba(13,148,136,0.07);
+    --amber: #b45309;
+    --amber-bg: rgba(180,83,9,0.07);
+    --coral: #e11d48;
+    --coral-bg: rgba(225,29,72,0.07);
+    --blue: #1d4ed8;
+    --blue-bg: rgba(29,78,216,0.07);
+    --green: #15803d;
+    --green-bg: rgba(21,128,61,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ─── HEADER ─── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 64px 40px 48px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(109,63,214,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 30% 30% at 80% 50%, rgba(13,148,136,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-label {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--purple);
+    border: 1px solid rgba(167,139,250,0.3);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    background: rgba(167,139,250,0.06);
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #1a1a2e 0%, var(--purple) 60%, var(--teal) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    max-width: 560px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  /* ─── LAYOUT ─── */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ─── SECTION LABEL ─── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 52px 0 24px;
+  }
+  .section-label span {
+    font-family: 'Syne', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .tag-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+  .tag-teal   { background: var(--teal-bg);   color: var(--teal);   border: 1px solid rgba(45,212,191,0.2); }
+  .tag-amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid rgba(251,191,36,0.2); }
+
+  /* ─── STEPS ─── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 600px) { .steps { grid-template-columns: 1fr; } }
+
+  .step {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 22px 20px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .step:hover { transform: translateY(-2px); }
+  .step::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .step.s1::before { background: linear-gradient(90deg, var(--purple), transparent); border-color: rgba(167,139,250,0.2); }
+  .step.s2::before { background: linear-gradient(90deg, var(--teal), transparent); }
+  .step.s3::before { background: linear-gradient(90deg, var(--amber), transparent); }
+  .step.s4::before { background: linear-gradient(90deg, var(--coral), transparent); }
+  .step:hover.s1 { border-color: rgba(167,139,250,0.3); }
+  .step:hover.s2 { border-color: rgba(45,212,191,0.3); }
+  .step:hover.s3 { border-color: rgba(251,191,36,0.3); }
+  .step:hover.s4 { border-color: rgba(251,113,133,0.3); }
+
+  .step-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .s1 .step-num { color: var(--purple); }
+  .s2 .step-num { color: var(--teal); }
+  .s3 .step-num { color: var(--amber); }
+  .s4 .step-num { color: var(--coral); }
+
+  .step h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .step p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+  .step-detail {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 5px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ─── EXAMPLES ─── */
+  .example-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 680px) { .example-grid { grid-template-columns: 1fr; } }
+
+  .example-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .example-header {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .example-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .example-icon.purple { background: var(--purple-bg); border: 1px solid rgba(167,139,250,0.2); }
+  .example-icon.blue   { background: var(--blue-bg);   border: 1px solid rgba(96,165,250,0.2); }
+
+  .example-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .example-header p { font-size: 12px; color: var(--muted); }
+
+  .example-body { padding: 18px 22px; }
+
+  .field-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .field-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    min-width: 90px;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+  .field-val {
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px;
+    color: #4f46e5;
+    line-height: 1.7;
+    margin-top: 10px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .code-block .cm { color: var(--muted); }
+  .code-block .ck { color: #0d6e6e; }
+  .code-block .cv { color: #92400e; }
+  .code-block .cs { color: #166534; }
+
+  /* ─── FLOW ─── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    row-gap: 8px;
+  }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 13px;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+  .flow-step.hi-purple { border-color: rgba(167,139,250,0.35); color: var(--purple); background: var(--purple-bg); }
+  .flow-step.hi-teal   { border-color: rgba(45,212,191,0.35);  color: var(--teal);   background: var(--teal-bg); }
+  .flow-step.hi-amber  { border-color: rgba(251,191,36,0.35);  color: var(--amber);  background: var(--amber-bg); }
+  .flow-step.hi-green  { border-color: rgba(74,222,128,0.35);  color: var(--green);  background: var(--green-bg); }
+  .flow-step.hi-blue   { border-color: rgba(96,165,250,0.35);  color: var(--blue);   background: var(--blue-bg); }
+  .flow-step.hi-coral  { border-color: rgba(251,113,133,0.35); color: var(--coral);  background: var(--coral-bg); }
+
+  /* ─── EXTRAS ROW ─── */
+  .extras {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  @media (max-width: 600px) { .extras { grid-template-columns: 1fr; } }
+
+  .extra-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: border-color 0.2s;
+  }
+  .extra-card:hover { border-color: var(--border2); }
+  .extra-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .extra-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .footer a { color: var(--purple); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* ─── ANIM ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .step, .example-card, .extra-card {
+    animation: fadeUp 0.5s ease both;
+  }
+  .step:nth-child(1) { animation-delay: 0.05s; }
+  .step:nth-child(2) { animation-delay: 0.10s; }
+  .step:nth-child(3) { animation-delay: 0.15s; }
+  .step:nth-child(4) { animation-delay: 0.20s; }
+  .example-card:nth-child(1) { animation-delay: 0.25s; }
+  .example-card:nth-child(2) { animation-delay: 0.33s; }
+  .extra-card:nth-child(1) { animation-delay: 0.3s; }
+  .extra-card:nth-child(2) { animation-delay: 0.36s; }
+  .extra-card:nth-child(3) { animation-delay: 0.42s; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Infográfico para aula</div>
+  <h1>Claude Managed Agents</h1>
+  <p>Ambiente gerenciado para rodar agentes autônomos na infraestrutura da Anthropic — sem construir loop, sandbox ou infraestrutura própria.</p>
+</div>
+
+<div class="container">
+
+  <!-- COMO FUNCIONA -->
+  <div class="section-label">
+    <span class="tag tag-purple">Fundamentos</span>
+    <span>Como funciona</span>
+  </div>
+
+  <div class="steps">
+    <div class="step s1">
+      <div class="step-num">PASSO 01</div>
+      <h3>Definir o agente</h3>
+      <p>Configure o model, system prompt, ferramentas e servidores MCP. O agente recebe um ID único e pode ser reutilizado em múltiplas sessões.</p>
+      <div class="step-detail">
+        <span class="chip">system_prompt</span>
+        <span class="chip">model</span>
+        <span class="chip">tools</span>
+        <span class="chip">mcp_servers</span>
+        <span class="chip">agent_id</span>
+      </div>
+    </div>
+
+    <div class="step s2">
+      <div class="step-num">PASSO 02</div>
+      <h3>Configurar o ambiente</h3>
+      <p>Container cloud com pacotes pré-instalados, regras de rede e arquivos montados. Credenciais ficam no vault seguro — o agente nunca as vê diretamente.</p>
+      <div class="step-detail">
+        <span class="chip">Python / Node.js / Go</span>
+        <span class="chip">network rules</span>
+        <span class="chip">OAuth vault</span>
+        <span class="chip">MCP proxy</span>
+      </div>
+    </div>
+
+    <div class="step s3">
+      <div class="step-num">PASSO 03</div>
+      <h3>Lançar uma sessão</h3>
+      <p>Sessão referencia o agente e o ambiente. Estado persistido fora da context window via session log. Recuperação automática após falhas.</p>
+      <div class="step-detail">
+        <span class="chip">session_id</span>
+        <span class="chip">getEvents()</span>
+        <span class="chip">context reset</span>
+        <span class="chip">checkpointing</span>
+      </div>
+    </div>
+
+    <div class="step s4">
+      <div class="step-num">PASSO 04</div>
+      <h3>Enviar mensagens</h3>
+      <p>Claude executa ferramentas autonomamente em loop. Resultados chegam via server-sent events (SSE). Rastreamento completo no Claude Console.</p>
+      <div class="step-detail">
+        <span class="chip">SSE streaming</span>
+        <span class="chip">tool_use loop</span>
+        <span class="chip">Console tracing</span>
+        <span class="chip">$0.08/hr runtime</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXEMPLOS -->
+  <div class="section-label">
+    <span class="tag tag-teal">Exemplos práticos</span>
+    <span>Casos de uso</span>
+  </div>
+
+  <div class="example-grid">
+
+    <!-- EXEMPLO 1: Suporte técnico -->
+    <div class="example-card">
+      <div class="example-header">
+        <div class="example-icon purple">🎧</div>
+        <div>
+          <h3>Agente de suporte técnico</h3>
+          <p>Lê tickets, pesquisa base de conhecimento e responde por email automaticamente</p>
+        </div>
+      </div>
+      <div class="example-body">
+        <div class="field-row">
+          <div class="field-label">Modelo</div>
+          <div class="field-val">claude-sonnet-4</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">System prompt</div>
+          <div class="field-val" style="font-style:italic; color: #6d3fd6; font-size:12px;">"Você é um agente de suporte. Leia o ticket, pesquise na base de conhecimento e redija uma resposta clara e empática. Feche o ticket ao concluir."</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Ferramentas</div>
+          <div class="field-val">Gmail MCP · Google Drive MCP · Web search</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Ambiente</div>
+          <div class="field-val">Python 3.12 · API interna de tickets</div>
+        </div>
+
+        <div class="code-block"><span class="cm"># Exemplo de chamada à API</span>
+<span class="ck">session</span> = create_session(
+  <span class="cv">agent_id</span>=<span class="cs">"agent_suporte_01"</span>,
+  <span class="cv">event</span>={<span class="cs">"ticket_id"</span>: <span class="cs">"#4821"</span>}
+)</div>
+
+        <div style="margin-top:14px; font-size:12px; color:var(--muted); margin-bottom:8px;">Fluxo de execução</div>
+        <div class="flow">
+          <div class="flow-step hi-purple">Lê ticket #4821</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-teal">Busca na base</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-amber">Redige resposta</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-green">Envia email</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-coral">Fecha ticket</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXEMPLO 2: Agente de análise de dados -->
+    <div class="example-card">
+      <div class="example-header">
+        <div class="example-icon blue">📊</div>
+        <div>
+          <h3>Agente de análise de dados</h3>
+          <p>Lê relatórios do Google Drive, gera análises e envia insights por email toda segunda-feira</p>
+        </div>
+      </div>
+      <div class="example-body">
+        <div class="field-row">
+          <div class="field-label">Modelo</div>
+          <div class="field-val">claude-sonnet-4</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">System prompt</div>
+          <div class="field-val" style="font-style:italic; color: #1d4ed8; font-size:12px;">"Você é um analista de dados. Leia os relatórios da semana no Drive, identifique tendências, anomalias e oportunidades, e envie um resumo executivo por email."</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Ferramentas</div>
+          <div class="field-val">Google Drive MCP · Gmail MCP · Python (pandas, matplotlib)</div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Ambiente</div>
+          <div class="field-val">Python 3.12 · pandas · matplotlib · schedule semanal</div>
+        </div>
+
+        <div class="code-block"><span class="cm"># Agente disparado toda segunda</span>
+<span class="ck">session</span> = create_session(
+  <span class="cv">agent_id</span>=<span class="cs">"agent_analytics_01"</span>,
+  <span class="cv">event</span>={<span class="cs">"period"</span>: <span class="cs">"last_week"</span>}
+)</div>
+
+        <div style="margin-top:14px; font-size:12px; color:var(--muted); margin-bottom:8px;">Fluxo de execução</div>
+        <div class="flow">
+          <div class="flow-step hi-blue">Lê arquivos Drive</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-purple">Processa dados</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-teal">Gera gráficos</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-amber">Resume insights</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step hi-green">Envia email</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RECURSOS AVANÇADOS -->
+  <div class="section-label">
+    <span class="tag tag-amber">Recursos avançados</span>
+    <span>O que o Managed Agents gerencia por você</span>
+  </div>
+
+  <div class="extras">
+    <div class="extra-card">
+      <h4 style="color: var(--purple);">🧠 Dreaming</h4>
+      <p>O agente revisa sessões recentes enquanto "dorme", encontra padrões e atualiza sua memória automaticamente — como o cérebro humano durante o sono.</p>
+    </div>
+    <div class="extra-card">
+      <h4 style="color: var(--teal);">🎯 Outcomes</h4>
+      <p>Defina critérios de sucesso e um agente avaliador verifica se o resultado foi atingido. Em testes internos, melhorou a taxa de sucesso em até 10 pontos.</p>
+    </div>
+    <div class="extra-card">
+      <h4 style="color: var(--amber);">🤝 Multi-agente</h4>
+      <p>Um agente principal pode dividir tarefas complexas e delegar a subagentes em paralelo. Rastreamento passo a passo disponível no Claude Console.</p>
+    </div>
+    <div class="extra-card">
+      <h4 style="color: var(--coral);">🔐 Vault de credenciais</h4>
+      <p>OAuth tokens ficam em vault seguro. O agente nunca manipula credenciais diretamente — um proxy autenticado faz as chamadas externas.</p>
+    </div>
+    <div class="extra-card">
+      <h4 style="color: var(--blue);">♻️ Context engineering</h4>
+      <p>Sessões longas que excedem a context window são gerenciadas automaticamente via getEvents() e compactação, sem perda de contexto crítico.</p>
+    </div>
+    <div class="extra-card">
+      <h4 style="color: var(--green);">📈 Escalabilidade</h4>
+      <p>A infraestrutura ajusta automaticamente — o agente rode uma vez por dia ou mil vezes por hora. Você paga apenas pelo uso: modelo + $0,08/hora de runtime.</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>Documentação oficial: <a href="https://platform.claude.com/docs/en/managed-agents/overview" target="_blank">platform.claude.com/docs/en/managed-agents</a></p>
+    <p style="margin-top:6px;">Claude Managed Agents · Anthropic · 2026</p>
+  </div>
+
+</div>
+</body>
+</html>
