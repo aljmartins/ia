@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercício: Construindo um AI Agent — Aula Prática</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f6f4ef;
+  --surface:  #ffffff;
+  --surface2: #eeebe3;
+  --border:   #ddd9ce;
+  --border2:  #c4bfb0;
+  --text:     #1e1c16;
+  --muted:    #7a7568;
+  --code-bg:  #1e1e2e;
+  --code-text:#cdd6f4;
+  --green:    #1a6b3a;
+  --green-l:  #d6f0e2;
+  --blue:     #1a4a8a;
+  --blue-l:   #d6e6f8;
+  --amber:    #7a4a08;
+  --amber-l:  #faecd0;
+  --red:      #8a1a1a;
+  --red-l:    #fae0e0;
+  --purple:   #4a1a8a;
+  --purple-l: #ece6f8;
+  --font-display: 'Fraunces', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+/* Dot grid background */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(circle, rgba(0,0,0,.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events:none; z-index:0;
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 52px 28px 100px;
+  position: relative; z-index:1;
+}
+
+/* ── Header ── */
+.header {
+  margin-bottom: 48px;
+  border-bottom: 2px solid var(--text);
+  padding-bottom: 28px;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+.header h1 em { font-style: italic; color: var(--green); }
+.header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 18px;
+}
+.meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+.meta-pill .dot {
+  width: 6px; height:6px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+/* ── Objective box ── */
+.objective {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--green);
+  border-radius: 0 8px 8px 0;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+.objective h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--green);
+}
+.objective p { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+.objective ul {
+  margin-top: 10px;
+  padding-left: 18px;
+  font-size: .85rem;
+  color: var(--text);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.objective ul li::marker { color: var(--green); }
+
+/* ── Section heading ── */
+.step-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 44px 0 20px;
+}
+.step-num {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-heading h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.step-heading h2 span {
+  font-family: var(--font-mono);
+  font-size: .7em;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+/* ── Explanation cards ── */
+.explain {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  font-size: .86rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.explain strong { color: var(--text); font-weight: 600; }
+.explain code {
+  font-family: var(--font-mono);
+  font-size: .82em;
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--blue);
+}
+
+/* ── Concept pills ── */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.pill {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.pill.g { border-color: var(--green); color: var(--green); background: var(--green-l); }
+.pill.b { border-color: var(--blue);  color: var(--blue);  background: var(--blue-l); }
+.pill.a { border-color: var(--amber); color: var(--amber); background: var(--amber-l); }
+.pill.p { border-color: var(--purple);color: var(--purple);background: var(--purple-l); }
+
+/* ── Code block ── */
+.code-wrap {
+  margin-bottom: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #2a2a3e;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+.code-header {
+  background: #16162a;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.code-header .file {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #7f7fa8;
+}
+.code-header .lang {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #5a5a80;
+}
+.code-body {
+  background: var(--code-bg);
+  padding: 20px;
+  overflow-x: auto;
+}
+pre {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--code-text);
+  white-space: pre;
+}
+
+/* Syntax highlight helpers (applied via span in HTML) */
+.kw  { color: #cba6f7; }   /* keyword: def, import, class, return, if, for, while */
+.fn  { color: #89b4fa; }   /* function names */
+.st  { color: #a6e3a1; }   /* strings */
+.cm  { color: #6c7086; font-style: italic; }  /* comments */
+.nm  { color: #fab387; }   /* numbers / constants */
+.tp  { color: #f38ba8; }   /* types */
+.op  { color: #89dceb; }   /* operators / punctuation highlight */
+.va  { color: #cdd6f4; }   /* variables (default) */
+
+/* ── Challenge box ── */
+.challenge {
+  background: var(--amber-l);
+  border: 1.5px solid var(--amber);
+  border-radius: 8px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+.challenge-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.challenge-head .icon { font-size: 18px; }
+.challenge-head h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--amber);
+}
+.challenge p { font-size: .84rem; color: var(--text); line-height: 1.65; margin-bottom: 10px; }
+.challenge-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: .83rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+.task-check {
+  width: 18px; height: 18px;
+  border-radius: 3px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  flex-shrink: 0;
+  margin-top: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: background .15s, border-color .15s;
+}
+.task-check.done {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+/* ── Tip box ── */
+.tip {
+  background: var(--blue-l);
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  font-size: .83rem;
+  color: var(--blue);
+  line-height: 1.6;
+  display: flex;
+  gap: 10px;
+}
+.tip .tip-icon { font-size: 16px; flex-shrink:0; margin-top: 1px; }
+
+/* ── Warning box ── */
+.warn {
+  background: var(--red-l);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  font-size: .83rem;
+  color: var(--red);
+  line-height: 1.6;
+  display: flex;
+  gap: 10px;
+}
+.warn .warn-icon { font-size: 16px; flex-shrink:0; }
+
+/* ── Concept diagram (mini) ── */
+.mini-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow-x: auto;
+}
+.diag-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 90px;
+}
+.diag-box {
+  width: 82px; height: 56px;
+  border-radius: 7px;
+  border: 1.5px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px;
+  line-height: 1.2;
+}
+.diag-box .di { font-size: 16px; }
+.diag-lbl {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: .5px;
+  text-align: center;
+}
+.diag-arr {
+  font-size: 18px;
+  color: var(--border2);
+  padding: 0 2px;
+  margin-bottom: 20px;
+}
+
+.box-p { background:#eef4fc; border-color:#a8c4e8; color:var(--blue); }
+.box-t { background:#faf0e8; border-color:#e8c898; color:var(--amber); }
+.box-a { background:#eef8f0; border-color:#98d0a8; color:var(--green); }
+.box-o { background:#faeaf4; border-color:#d898c8; color:#601848; }
+
+/* ── Progress tracker ── */
+.progress-header {
+  position: sticky;
+  top: 0;
+  background: rgba(246,244,239,.95);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  z-index: 100;
+  margin-bottom: 0;
+}
+.progress-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.progress-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 2px;
+  transition: width .4s ease;
+  width: 0%;
+}
+.progress-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+/* ── Divider ── */
+.rule { height:1px; background:var(--border); margin: 36px 0; }
+
+/* ── Bonus section ── */
+.bonus {
+  background: var(--purple-l);
+  border: 1.5px solid var(--purple);
+  border-radius: 8px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+.bonus h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--purple);
+  margin-bottom: 10px;
+}
+.bonus p { font-size: .84rem; color: var(--text); line-height:1.65; margin-bottom:10px; }
+.bonus ul {
+  padding-left: 16px;
+  font-size: .83rem;
+  color: var(--text);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.bonus ul li::marker { color: var(--purple); }
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.footer span { color: var(--green); }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.page > * { animation: fadeIn .5s ease both; }
+
+@media (max-width: 600px) {
+  pre { font-size: 11px; }
+  .mini-diagram { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sticky progress bar -->
+<div class="progress-header">
+  <div class="progress-inner">
+    <span class="progress-label">progresso</span>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <span class="progress-count" id="prog-count">0 / 10 tarefas</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="header">
+    <div class="eyebrow">Aula Prática · IA Agents · Nível Intermediário</div>
+    <h1>Construindo um<br><em>AI Agent</em> com Python</h1>
+    <div class="header-meta">
+      <div class="meta-pill"><div class="dot" style="background:var(--amber)"></div>~90 minutos</div>
+      <div class="meta-pill"><div class="dot" style="background:var(--blue)"></div>Python 3.10+</div>
+      <div class="meta-pill"><div class="dot" style="background:var(--green)"></div>API Anthropic (Claude)</div>
+      <div class="meta-pill"><div class="dot" style="background:var(--purple)"></div>Intermediário</div>
+    </div>
+  </header>
+
+  <!-- ══════════ OBJETIVO ══════════ -->
+  <div class="objective">
+    <h2>🎯 Objetivo da aula</h2>
+    <p>Nesta aula você vai construir um <strong>agente de pesquisa</strong> do zero. O agente recebe uma pergunta, decide quais ferramentas usar, executa ações e entrega uma resposta elaborada — tudo de forma autônoma.</p>
+    <ul>
+      <li>Entender o loop perceção → raciocínio → ação de um agente</li>
+      <li>Implementar <strong>tool use</strong> (uso de ferramentas) com a API da Anthropic</li>
+      <li>Construir um loop de execução autônomo em Python</li>
+      <li>Adicionar memória de curto prazo ao agente</li>
+      <li>Extender o agente com novas ferramentas (desafios)</li>
+    </ul>
+  </div>
+
+  <!-- ══════════ STEP 0: Setup ══════════ -->
+  <div class="step-heading">
+    <div class="step-num">0</div>
+    <h2>Configuração do ambiente <span>setup</span></h2>
+  </div>
+
+  <div class="explain">
+    Antes de começar, precisamos instalar as dependências e configurar a chave de API. A Anthropic oferece acesso gratuito para testes — você pode gerar uma chave em <strong>console.anthropic.com</strong>.
+  </div>
+
+  <div class="warn">
+    <span class="warn-icon">🔑</span>
+    <span>Nunca coloque sua API key diretamente no código! Use variáveis de ambiente. Sua chave dá acesso à sua conta e tem custos associados.</span>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="file">terminal</span>
+      <span class="lang">bash</span>
+    </div>
+    <div class="code-body"><pre><span class="cm"># Instalar dependências</span>
+pip install anthropic python-dotenv
+
+<span class="cm"># Criar arquivo de configuração</span>
+<span class="fn">echo</span> <span class="st">"ANTHROPIC_API_KEY=sua_chave_aqui"</span> > .env
+
+<span class="cm"># Verificar instalação</span>
+python -c <span class="st">"import anthropic; print('OK!')"</span></pre></div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="file">agente.py</span>
+      <span class="lang">python</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">import</span> <span class="va">anthropic</span>
+<span class="kw">import</span> <span class="va">os</span>
+<span class="kw">from</span> <span class="va">dotenv</span> <span class="kw">import</span> <span class="va">load_dotenv</span>
+
+<span class="cm"># Carrega variáveis de ambiente do arquivo .env</span>
+<span class="fn">load_dotenv</span>()
+
+<span class="cm"># Cria o cliente da API</span>
+<span class="va">cliente</span> = <span class="fn">anthropic.Anthropic</span>(
+    api_key=<span class="va">os</span>.<span class="fn">getenv</span>(<span class="st">"ANTHROPIC_API_KEY"</span>)
+)
+
+<span class="cm"># Teste rápido</span>
+<span class="va">resposta</span> = <span class="va">cliente</span>.<span class="va">messages</span>.<span class="fn">create</span>(
+    model=<span class="st">"claude-sonnet-4-5"</span>,
+    max_tokens=<span class="nm">100</span>,
+    messages=[{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="st">"Diga: Agente pronto!"</span>}]
+)
+<span class="fn">print</span>(<span class="va">resposta</span>.<span class="va">content</span>[<span class="nm">0</span>].<span class="va">text</span>)</pre></div>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">✅</span><h3>Tarefa 0.1 — Rode o código acima</h3></div>
+    <p>Configure o ambiente e confirme que o modelo responde corretamente antes de continuar.</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Instalei as dependências com <code>pip install</code></span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Criei o arquivo <code>.env</code> com minha API key</span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Rodei o script e vi "Agente pronto!" no terminal</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- ══════════ STEP 1: Tools ══════════ -->
+  <div class="step-heading">
+    <div class="step-num">1</div>
+    <h2>Definindo Ferramentas <span>tool use</span></h2>
+  </div>
+
+  <div class="pills">
+    <span class="pill g">Tool Use</span>
+    <span class="pill b">Function Calling</span>
+    <span class="pill">JSON Schema</span>
+  </div>
+
+  <div class="explain">
+    Um agente precisa de <strong>ferramentas</strong> — funções que ele pode chamar para interagir com o mundo. O Claude recebe a <em>definição</em> das ferramentas (nome, descrição, parâmetros) e decide quando e como usá-las. Você fornece a definição; o Claude chama; você executa e devolve o resultado.
+  </div>
+
+  <div class="mini-diagram">
+    <div class="diag-node">
+      <div class="diag-box box-p"><span class="di">❓</span>Pergunta</div>
+      <div class="diag-lbl">usuário</div>
+    </div>
+    <div class="diag-arr">→</div>
+    <div class="diag-node">
+      <div class="diag-box box-t"><span class="di">🧠</span>Claude decide</div>
+      <div class="diag-lbl">qual tool usar</div>
+    </div>
+    <div class="diag-arr">→</div>
+    <div class="diag-node">
+      <div class="diag-box box-a"><span class="di">⚙️</span>Você executa</div>
+      <div class="diag-lbl">a função Python</div>
+    </div>
+    <div class="diag-arr">→</div>
+    <div class="diag-node">
+      <div class="diag-box box-o"><span class="di">📩</span>Resultado</div>
+      <div class="diag-lbl">volta ao Claude</div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="file">ferramentas.py</span>
+      <span class="lang">python</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">import</span> <span class="va">datetime</span>
+<span class="kw">import</span> <span class="va">math</span>
+
+<span class="cm"># ── 1. Definição das ferramentas (o que o Claude vê) ──────────────</span>
+<span class="va">FERRAMENTAS</span> = [
+    {
+        <span class="st">"name"</span>: <span class="st">"calcular"</span>,
+        <span class="st">"description"</span>: <span class="st">"Calcula expressões matemáticas. Use para qualquer conta."</span>,
+        <span class="st">"input_schema"</span>: {
+            <span class="st">"type"</span>: <span class="st">"object"</span>,
+            <span class="st">"properties"</span>: {
+                <span class="st">"expressao"</span>: {
+                    <span class="st">"type"</span>: <span class="st">"string"</span>,
+                    <span class="st">"description"</span>: <span class="st">"Expressão matemática. Ex: '2 ** 10' ou 'math.sqrt(144)'"</span>
+                }
+            },
+            <span class="st">"required"</span>: [<span class="st">"expressao"</span>]
+        }
+    },
+    {
+        <span class="st">"name"</span>: <span class="st">"data_hora"</span>,
+        <span class="st">"description"</span>: <span class="st">"Retorna a data e hora atual do sistema."</span>,
+        <span class="st">"input_schema"</span>: {
+            <span class="st">"type"</span>: <span class="st">"object"</span>,
+            <span class="st">"properties"</span>: {},
+            <span class="st">"required"</span>: []
+        }
+    },
+    {
+        <span class="st">"name"</span>: <span class="st">"contar_palavras"</span>,
+        <span class="st">"description"</span>: <span class="st">"Conta quantas palavras há em um texto."</span>,
+        <span class="st">"input_schema"</span>: {
+            <span class="st">"type"</span>: <span class="st">"object"</span>,
+            <span class="st">"properties"</span>: {
+                <span class="st">"texto"</span>: {
+                    <span class="st">"type"</span>: <span class="st">"string"</span>,
+                    <span class="st">"description"</span>: <span class="st">"Texto a ser analisado"</span>
+                }
+            },
+            <span class="st">"required"</span>: [<span class="st">"texto"</span>]
+        }
+    }
+]
+
+<span class="cm"># ── 2. Implementação real das ferramentas (funções Python) ─────────</span>
+<span class="kw">def</span> <span class="fn">executar_ferramenta</span>(<span class="va">nome</span>: <span class="tp">str</span>, <span class="va">params</span>: <span class="tp">dict</span>) -> <span class="tp">str</span>:
+    <span class="st">"""Executa a ferramenta pedida pelo Claude e retorna o resultado."""</span>
+
+    <span class="kw">if</span> <span class="va">nome</span> == <span class="st">"calcular"</span>:
+        <span class="kw">try</span>:
+            <span class="cm"># Avalia a expressão de forma segura</span>
+            <span class="va">resultado</span> = <span class="fn">eval</span>(<span class="va">params</span>[<span class="st">"expressao"</span>], {<span class="st">"__builtins__"</span>: {}}, {<span class="st">"math"</span>: <span class="va">math</span>})
+            <span class="kw">return</span> <span class="fn">str</span>(<span class="va">resultado</span>)
+        <span class="kw">except</span> <span class="tp">Exception</span> <span class="kw">as</span> <span class="va">e</span>:
+            <span class="kw">return</span> <span class="fn">f</span><span class="st">"Erro: {e}"</span>
+
+    <span class="kw">elif</span> <span class="va">nome</span> == <span class="st">"data_hora"</span>:
+        <span class="va">agora</span> = <span class="va">datetime</span>.<span class="va">datetime</span>.<span class="fn">now</span>()
+        <span class="kw">return</span> <span class="va">agora</span>.<span class="fn">strftime</span>(<span class="st">"%d/%m/%Y %H:%M:%S"</span>)
+
+    <span class="kw">elif</span> <span class="va">nome</span> == <span class="st">"contar_palavras"</span>:
+        <span class="va">palavras</span> = <span class="va">params</span>[<span class="st">"texto"</span>].<span class="fn">split</span>()
+        <span class="kw">return</span> <span class="fn">f</span><span class="st">"{len(palavras)} palavras"</span>
+
+    <span class="kw">return</span> <span class="st">"Ferramenta desconhecida."</span></pre></div>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">🔧</span><h3>Tarefa 1.1 — Adicione uma nova ferramenta</h3></div>
+    <p>Crie uma ferramenta chamada <code>"inverter_texto"</code> que recebe uma string e a retorna invertida (ex: "gato" → "otag"). Adicione a definição em <code>FERRAMENTAS</code> e implemente em <code>executar_ferramenta</code>.</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Adicionei a definição JSON da ferramenta em <code>FERRAMENTAS</code></span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Implementei a lógica em <code>executar_ferramenta</code></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- ══════════ STEP 2: Agent Loop ══════════ -->
+  <div class="step-heading">
+    <div class="step-num">2</div>
+    <h2>O Loop do Agente <span>agent loop</span></h2>
+  </div>
+
+  <div class="pills">
+    <span class="pill g">Agentic Loop</span>
+    <span class="pill b">Tool Result</span>
+    <span class="pill a">stop_reason</span>
+    <span class="pill">Iteração</span>
+  </div>
+
+  <div class="explain">
+    O coração do agente é um <strong>loop</strong>: enviamos a mensagem ao Claude, verificamos se ele quer usar uma ferramenta (<code>stop_reason == "tool_use"</code>), executamos a ferramenta, devolvemos o resultado, e repetimos — até o Claude responder com <code>"end_turn"</code>, indicando que terminou.
+  </div>
+
+  <div class="tip">
+    <span class="tip-icon">💡</span>
+    <span>O Claude não executa ferramentas por conta própria — ele <em>pede</em> para você executar. Isso é intencional: mantém o controle do que é executado do seu lado, não dentro do modelo.</span>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="file">agente.py — loop principal</span>
+      <span class="lang">python</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">from</span> <span class="va">ferramentas</span> <span class="kw">import</span> <span class="va">FERRAMENTAS</span>, <span class="va">executar_ferramenta</span>
+
+<span class="kw">def</span> <span class="fn">rodar_agente</span>(<span class="va">pergunta</span>: <span class="tp">str</span>) -> <span class="tp">str</span>:
+    <span class="st">"""
+    Roda o loop completo do agente até obter a resposta final.
+    Retorna o texto final gerado pelo Claude.
+    """</span>
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"\n🧠 Pergunta: {pergunta}"</span>)
+    <span class="fn">print</span>(<span class="st">"─" * 50</span>)
+
+    <span class="cm"># Histórico de mensagens (memória de curto prazo)</span>
+    <span class="va">mensagens</span> = [
+        {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="va">pergunta</span>}
+    ]
+
+    <span class="cm"># Limite de iterações para evitar loop infinito</span>
+    <span class="va">max_iteracoes</span> = <span class="nm">10</span>
+    <span class="va">iteracao</span> = <span class="nm">0</span>
+
+    <span class="kw">while</span> <span class="va">iteracao</span> < <span class="va">max_iteracoes</span>:
+        <span class="va">iteracao</span> += <span class="nm">1</span>
+        <span class="fn">print</span>(<span class="fn">f</span><span class="st">"\n🔄 Iteração {iteracao}..."</span>)
+
+        <span class="cm"># ── Envia mensagens ao Claude ──────────────────────────────</span>
+        <span class="va">resposta</span> = <span class="va">cliente</span>.<span class="va">messages</span>.<span class="fn">create</span>(
+            model=<span class="st">"claude-sonnet-4-5"</span>,
+            max_tokens=<span class="nm">1024</span>,
+            tools=<span class="va">FERRAMENTAS</span>,          <span class="cm"># lista de ferramentas disponíveis</span>
+            messages=<span class="va">mensagens</span>           <span class="cm"># histórico completo</span>
+        )
+
+        <span class="cm"># ── Adiciona resposta do Claude ao histórico ───────────────</span>
+        <span class="va">mensagens</span>.<span class="fn">append</span>({
+            <span class="st">"role"</span>: <span class="st">"assistant"</span>,
+            <span class="st">"content"</span>: <span class="va">resposta</span>.<span class="va">content</span>
+        })
+
+        <span class="cm"># ── Verificar motivo de parada ─────────────────────────────</span>
+        <span class="kw">if</span> <span class="va">resposta</span>.<span class="va">stop_reason</span> == <span class="st">"end_turn"</span>:
+            <span class="cm"># Claude terminou — extrai texto final</span>
+            <span class="kw">for</span> <span class="va">bloco</span> <span class="kw">in</span> <span class="va">resposta</span>.<span class="va">content</span>:
+                <span class="kw">if</span> <span class="fn">hasattr</span>(<span class="va">bloco</span>, <span class="st">"text"</span>):
+                    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"\n✅ Resposta final:\n{bloco.text}"</span>)
+                    <span class="kw">return</span> <span class="va">bloco</span>.<span class="va">text</span>
+
+        <span class="kw">elif</span> <span class="va">resposta</span>.<span class="va">stop_reason</span> == <span class="st">"tool_use"</span>:
+            <span class="cm"># Claude quer usar ferramenta(s)</span>
+            <span class="va">resultados_tools</span> = []
+
+            <span class="kw">for</span> <span class="va">bloco</span> <span class="kw">in</span> <span class="va">resposta</span>.<span class="va">content</span>:
+                <span class="kw">if</span> <span class="va">bloco</span>.<span class="va">type</span> == <span class="st">"tool_use"</span>:
+                    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"  🔧 Usando ferramenta: {bloco.name}"</span>)
+                    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"     Parâmetros: {bloco.input}"</span>)
+
+                    <span class="cm"># Executa a ferramenta e captura resultado</span>
+                    <span class="va">resultado</span> = <span class="fn">executar_ferramenta</span>(<span class="va">bloco</span>.<span class="va">name</span>, <span class="va">bloco</span>.<span class="va">input</span>)
+                    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"     Resultado: {resultado}"</span>)
+
+                    <span class="va">resultados_tools</span>.<span class="fn">append</span>({
+                        <span class="st">"type"</span>: <span class="st">"tool_result"</span>,
+                        <span class="st">"tool_use_id"</span>: <span class="va">bloco</span>.<span class="va">id</span>,   <span class="cm"># ID único da chamada</span>
+                        <span class="st">"content"</span>: <span class="va">resultado</span>
+                    })
+
+            <span class="cm"># Devolve os resultados ao Claude para continuar</span>
+            <span class="va">mensagens</span>.<span class="fn">append</span>({
+                <span class="st">"role"</span>: <span class="st">"user"</span>,
+                <span class="st">"content"</span>: <span class="va">resultados_tools</span>
+            })
+
+    <span class="kw">return</span> <span class="st">"Limite de iterações atingido."</span>
+
+
+<span class="cm"># ── Teste ────────────────────────────────────────────────────────</span>
+<span class="kw">if</span> <span class="va">__name__</span> == <span class="st">"__main__"</span>:
+    <span class="fn">rodar_agente</span>(<span class="st">"Quanto é 2 elevado a 20? E qual é a data de hoje?"</span>)</pre></div>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">🚀</span><h3>Tarefa 2.1 — Rode e observe o loop</h3></div>
+    <p>Execute o agente com a pergunta acima e observe no terminal cada iteração, quais ferramentas foram chamadas e os resultados. Depois, faça suas próprias perguntas.</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Rodei o agente e vi as iterações no terminal</span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Fiz uma pergunta que usa <strong>duas</strong> ferramentas ao mesmo tempo</span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Entendi por que <code>mensagens</code> cresce a cada iteração</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- ══════════ STEP 3: Memória ══════════ -->
+  <div class="step-heading">
+    <div class="step-num">3</div>
+    <h2>Adicionando Memória <span>memory</span></h2>
+  </div>
+
+  <div class="pills">
+    <span class="pill g">Short-term Memory</span>
+    <span class="pill b">Histórico</span>
+    <span class="pill a">Context Window</span>
+  </div>
+
+  <div class="explain">
+    O agente acima <strong>esquece</strong> tudo entre chamadas a <code>rodar_agente()</code>. Para criar uma sessão com memória, precisamos manter o histórico de mensagens <em>fora</em> da função e passá-lo de uma chamada à outra — simulando uma conversa contínua.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="file">agente_com_memoria.py</span>
+      <span class="lang">python</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">class</span> <span class="tp">AgenteComMemoria</span>:
+    <span class="st">"""Agente que mantém histórico entre perguntas."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="va">self</span>, <span class="va">system_prompt</span>: <span class="tp">str</span> = <span class="st">""</span>):
+        <span class="va">self</span>.<span class="va">historico</span> = []     <span class="cm"># memória de curto prazo</span>
+        <span class="va">self</span>.<span class="va">system_prompt</span> = <span class="va">system_prompt</span>
+
+    <span class="kw">def</span> <span class="fn">perguntar</span>(<span class="va">self</span>, <span class="va">pergunta</span>: <span class="tp">str</span>) -> <span class="tp">str</span>:
+        <span class="cm"># Adiciona nova pergunta ao histórico</span>
+        <span class="va">self</span>.<span class="va">historico</span>.<span class="fn">append</span>({<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="va">pergunta</span>})
+
+        <span class="va">max_iter</span> = <span class="nm">10</span>
+        <span class="kw">for</span> <span class="va">_</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="va">max_iter</span>):
+            <span class="va">kwargs</span> = {
+                <span class="st">"model"</span>: <span class="st">"claude-sonnet-4-5"</span>,
+                <span class="st">"max_tokens"</span>: <span class="nm">1024</span>,
+                <span class="st">"tools"</span>: <span class="va">FERRAMENTAS</span>,
+                <span class="st">"messages"</span>: <span class="va">self</span>.<span class="va">historico</span>
+            }
+            <span class="cm"># System prompt é opcional (instrui o comportamento do agente)</span>
+            <span class="kw">if</span> <span class="va">self</span>.<span class="va">system_prompt</span>:
+                <span class="va">kwargs</span>[<span class="st">"system"</span>] = <span class="va">self</span>.<span class="va">system_prompt</span>
+
+            <span class="va">resposta</span> = <span class="va">cliente</span>.<span class="va">messages</span>.<span class="fn">create</span>(**<span class="va">kwargs</span>)
+            <span class="va">self</span>.<span class="va">historico</span>.<span class="fn">append</span>({
+                <span class="st">"role"</span>: <span class="st">"assistant"</span>, <span class="st">"content"</span>: <span class="va">resposta</span>.<span class="va">content</span>
+            })
+
+            <span class="kw">if</span> <span class="va">resposta</span>.<span class="va">stop_reason</span> == <span class="st">"end_turn"</span>:
+                <span class="kw">for</span> <span class="va">b</span> <span class="kw">in</span> <span class="va">resposta</span>.<span class="va">content</span>:
+                    <span class="kw">if</span> <span class="fn">hasattr</span>(<span class="va">b</span>, <span class="st">"text"</span>):
+                        <span class="kw">return</span> <span class="va">b</span>.<span class="va">text</span>
+
+            <span class="kw">elif</span> <span class="va">resposta</span>.<span class="va">stop_reason</span> == <span class="st">"tool_use"</span>:
+                <span class="va">tool_results</span> = []
+                <span class="kw">for</span> <span class="va">b</span> <span class="kw">in</span> <span class="va">resposta</span>.<span class="va">content</span>:
+                    <span class="kw">if</span> <span class="va">b</span>.<span class="va">type</span> == <span class="st">"tool_use"</span>:
+                        <span class="va">res</span> = <span class="fn">executar_ferramenta</span>(<span class="va">b</span>.<span class="va">name</span>, <span class="va">b</span>.<span class="va">input</span>)
+                        <span class="va">tool_results</span>.<span class="fn">append</span>({
+                            <span class="st">"type"</span>: <span class="st">"tool_result"</span>,
+                            <span class="st">"tool_use_id"</span>: <span class="va">b</span>.<span class="va">id</span>,
+                            <span class="st">"content"</span>: <span class="va">res</span>
+                        })
+                <span class="va">self</span>.<span class="va">historico</span>.<span class="fn">append</span>({
+                    <span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="va">tool_results</span>
+                })
+
+        <span class="kw">return</span> <span class="st">"Limite de iterações."</span>
+
+    <span class="kw">def</span> <span class="fn">limpar_memoria</span>(<span class="va">self</span>):
+        <span class="st">"""Reseta a conversa."""</span>
+        <span class="va">self</span>.<span class="va">historico</span> = []
+        <span class="fn">print</span>(<span class="st">"🗑️  Memória apagada."</span>)
+
+
+<span class="cm"># ── Teste de conversa contínua ────────────────────────────────────</span>
+<span class="kw">if</span> <span class="va">__name__</span> == <span class="st">"__main__"</span>:
+    <span class="va">agente</span> = <span class="fn">AgenteComMemoria</span>(
+        system_prompt=<span class="st">"Você é um assistente matemático. Seja direto e use as ferramentas disponíveis."</span>
+    )
+
+    <span class="fn">print</span>(<span class="va">agente</span>.<span class="fn">perguntar</span>(<span class="st">"Quanto é 15 ao quadrado?"</span>))
+    <span class="fn">print</span>(<span class="va">agente</span>.<span class="fn">perguntar</span>(<span class="st">"Agora some esse resultado com 50."</span>))  <span class="cm"># lembra o resultado anterior!</span>
+    <span class="fn">print</span>(<span class="va">agente</span>.<span class="fn">perguntar</span>(<span class="st">"E qual a raiz quadrada disso?"</span>))</pre></div>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">🧩</span><h3>Tarefa 3.1 — Conversa com memória</h3></div>
+    <p>Use a classe <code>AgenteComMemoria</code> para criar uma conversa de pelo menos <strong>4 turnos</strong> onde cada pergunta depende da resposta anterior. Teste também o <code>limpar_memoria()</code> e observe o que muda.</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Criei uma conversa de 4+ turnos dependentes</span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Testei <code>limpar_memoria()</code> e percebi que o contexto foi perdido</span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Modifiquei o <code>system_prompt</code> para mudar o comportamento do agente</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- ══════════ DESAFIOS FINAIS ══════════ -->
+  <div class="step-heading">
+    <div class="step-num">🏆</div>
+    <h2>Desafios Finais <span>para quem terminar cedo</span></h2>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">⭐</span><h3>Desafio A — Ferramenta de clima (simulada)</h3></div>
+    <p>Crie uma ferramenta <code>"clima"</code> que recebe uma cidade e retorna um clima <em>simulado</em> (pode ser hardcoded ou aleatório). O agente deve ser capaz de responder "Como está o tempo em São Paulo hoje?".</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Ferramenta criada e integrada ao loop do agente</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">⭐⭐</span><h3>Desafio B — Interface de linha de comando</h3></div>
+    <p>Crie um loop interativo no terminal onde o usuário digita perguntas e o agente responde, como um chat. Use <code>input()</code> e rode em loop até o usuário digitar "sair".</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>CLI funcional com prompt de entrada e saída formatada</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="challenge">
+    <div class="challenge-head"><span class="icon">⭐⭐⭐</span><h3>Desafio C — Salvar e carregar histórico</h3></div>
+    <p>Serialize o histórico de mensagens em JSON (<code>json.dump</code>) ao encerrar, e carregue-o (<code>json.load</code>) ao iniciar — assim o agente lembra conversas entre execuções do programa.</p>
+    <div class="challenge-tasks">
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Histórico salvo em arquivo <code>historico.json</code></span>
+      </div>
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)"></div>
+        <span>Histórico carregado automaticamente ao iniciar</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ BONUS ══════════ -->
+  <div class="bonus">
+    <h3>🚀 Para explorar além da aula</h3>
+    <p>Se quiser se aprofundar em agentes e sistemas agentic, estes são os próximos passos naturais:</p>
+    <ul>
+      <li><strong>LangChain / LangGraph</strong> — frameworks de alto nível para construir pipelines agentic com grafos de estado</li>
+      <li><strong>Model Context Protocol (MCP)</strong> — protocolo aberto da Anthropic para conectar agentes a serviços externos de forma padronizada</li>
+      <li><strong>Multi-agent com CrewAI</strong> — orquestração de múltiplos agentes especializados colaborando em tarefas complexas</li>
+      <li><strong>RAG (Retrieval-Augmented Generation)</strong> — dar ao agente acesso a uma base de conhecimento personalizada via busca semântica</li>
+      <li><strong>Documentação oficial</strong> — <code>docs.anthropic.com</code> → seção "Build with Claude" → Tool use</li>
+    </ul>
+  </div>
+
+  <div class="rule"></div>
+
+  <footer class="footer">
+    Aula Prática · <span>AI Agents com Python</span> · Programação com IA · Nível Intermediário
+  </footer>
+
+</div>
+
+<script>
+let total = 0;
+let done = 0;
+
+function toggleTask(el) {
+  el.classList.toggle('done');
+  el.textContent = el.classList.contains('done') ? '✓' : '';
+  updateProgress();
+}
+
+function updateProgress() {
+  const checks = document.querySelectorAll('.task-check');
+  const donos  = document.querySelectorAll('.task-check.done');
+  total = checks.length;
+  done  = donos.length;
+  const pct = total > 0 ? (done / total * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-count').textContent = done + ' / ' + total + ' tarefas';
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', updateProgress);
+</script>
+</body>
+</html>
