@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA Agents & Agentic AI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f7f5f0;
+    --surface:   #ffffff;
+    --surface2:  #f0ede6;
+    --border:    #e0dbd0;
+    --border2:   #c8c2b4;
+    --text:      #1c1a14;
+    --muted:     #7a7468;
+    --agent-h:   #1a4a8a;
+    --agent-m:   #2e6fc4;
+    --agent-l:   #d6e6f8;
+    --agentic-h: #6b2020;
+    --agentic-m: #c44040;
+    --agentic-l: #fae0e0;
+    --both:      #2a5a3a;
+    --both-m:    #3a8a56;
+    --both-l:    #d8f0e2;
+    --accent:    #c44040;
+    --font-serif: 'DM Serif Display', serif;
+    --font-sans:  'DM Sans', sans-serif;
+    --font-mono:  'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle dot grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 28px 88px;
+    position: relative; z-index: 1;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    margin-bottom: 56px;
+    animation: fadeDown .7s ease both;
+  }
+  .header-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+  }
+  .header .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1.0;
+    color: var(--text);
+  }
+  .header h1 em {
+    font-style: italic;
+    color: var(--agentic-m);
+  }
+  .header .desc {
+    margin-top: 14px;
+    font-size: .9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 500px;
+  }
+  .header-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: .5px;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .rule {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  /* ─── SECTION TITLES ─── */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── COMPARISON STRIP ─── */
+  .compare-strip {
+    display: grid;
+    grid-template-columns: 1fr 56px 1fr;
+    gap: 0;
+    margin-bottom: 48px;
+    animation: fadeUp .6s ease .1s both;
+  }
+
+  .compare-col {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .compare-col.agent { border-color: var(--agent-m); }
+  .compare-col.agentic { border-color: var(--agentic-m); }
+
+  .compare-head {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-col.agent   .compare-head { background: var(--agent-l);   border-bottom-color: #b8d0ee; }
+  .compare-col.agentic .compare-head { background: var(--agentic-l); border-bottom-color: #f0c0c0; }
+
+  .compare-head .type {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .compare-col.agent   .compare-head .type { color: var(--agent-h); }
+  .compare-col.agentic .compare-head .type { color: var(--agentic-h); }
+
+  .compare-head h2 {
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    line-height: 1.1;
+  }
+  .compare-col.agent   .compare-head h2 { color: var(--agent-h); }
+  .compare-col.agentic .compare-head h2 { color: var(--agentic-h); }
+
+  .compare-head p {
+    margin-top: 8px;
+    font-size: .82rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .compare-body {
+    padding: 18px 22px;
+    background: var(--surface);
+  }
+
+  .compare-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--surface2);
+    font-size: .82rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-row .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .agent-dot   { background: var(--agent-m); }
+  .agentic-dot { background: var(--agentic-m); }
+  .compare-row strong { font-weight: 600; }
+
+  /* VS badge in middle */
+  .vs-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vs-badge {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: .85rem;
+    flex-shrink: 0;
+  }
+
+  /* ─── FLOW DIAGRAM ─── */
+  .flow-section {
+    margin-bottom: 48px;
+    animation: fadeUp .6s ease .2s both;
+  }
+
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 24px;
+    overflow-x: auto;
+  }
+
+  /* Simple AI Agent loop */
+  .loop-grid {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    flex-wrap: nowrap;
+    min-width: 520px;
+  }
+  .loop-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 100px;
+  }
+  .loop-box {
+    width: 88px; height: 64px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1.5px solid;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+    padding: 6px;
+  }
+  .loop-box .icon { font-size: 18px; }
+  .loop-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .loop-arrow {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    color: var(--muted);
+    font-size: 20px;
+    padding: 0 4px;
+    margin-bottom: 24px;
+  }
+
+  /* Box themes */
+  .box-perceive  { background: #eef4fc; border-color: #a8c4e8; color: var(--agent-h); }
+  .box-think     { background: #faf0e8; border-color: #e8c898; color: #704010; }
+  .box-act       { background: #eef8f0; border-color: #98d0a8; color: var(--both); }
+  .box-feedback  { background: #faeaf4; border-color: #d898c8; color: #601848; }
+  .box-goal      { background: var(--agentic-l); border-color: #e09090; color: var(--agentic-h); }
+  .box-plan      { background: #fff8e0; border-color: #dfc060; color: #604800; }
+  .box-exec      { background: var(--agent-l); border-color: var(--agent-m); color: var(--agent-h); }
+  .box-adapt     { background: #eef0fe; border-color: #9090e8; color: #302880; }
+  .box-memory    { background: #f8f0e8; border-color: #c8a870; color: #583808; }
+
+  /* Feedback arc label */
+  .feedback-arc {
+    text-align: center;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ─── CARDS GRID ─── */
+  .cards-section {
+    animation: fadeUp .6s ease .3s both;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .22s ease, box-shadow .22s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.09);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent);
+  }
+
+  .card-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--card-accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-tag-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--card-accent);
+  }
+  .card h3 {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .card .subtitle {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .card p {
+    font-size: .8rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .card-example {
+    background: var(--surface2);
+    border-left: 2px solid var(--card-accent);
+    border-radius: 0 4px 4px 0;
+    padding: 8px 10px;
+    font-size: .78rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .card-example .ex-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--card-accent);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  /* ─── SPECTRUM BAR ─── */
+  .spectrum-section {
+    margin-bottom: 48px;
+    animation: fadeUp .6s ease .35s both;
+  }
+  .spectrum-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 28px 24px;
+  }
+  .spectrum-bar {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(to right, var(--agent-l) 0%, var(--agent-m) 30%, #9050a0 60%, var(--agentic-m) 80%, var(--agentic-h) 100%);
+    margin: 16px 0 10px;
+    position: relative;
+  }
+  .spectrum-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: .5px;
+    margin-bottom: 20px;
+  }
+  .spectrum-examples {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .spec-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .spec-item .spec-name {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .spec-item .spec-desc {
+    font-size: .72rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .spec-item .spec-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-bottom: 2px;
+  }
+
+  /* ─── MULTI-AGENT ─── */
+  .multi-section {
+    margin-bottom: 48px;
+    animation: fadeUp .6s ease .4s both;
+  }
+  .multi-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .multi-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .orchestrator {
+    background: var(--agentic-l);
+    border: 1.5px solid var(--agentic-m);
+    border-radius: 8px;
+    padding: 10px 20px;
+    text-align: center;
+    font-weight: 600;
+    font-size: .82rem;
+    color: var(--agentic-h);
+    width: 100%;
+    max-width: 200px;
+  }
+  .orch-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--agentic-m);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .sub-agents {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .sub-agent {
+    background: var(--agent-l);
+    border: 1px solid var(--agent-m);
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--agent-h);
+    min-width: 80px;
+  }
+  .sub-agent .sub-icon { font-size: 14px; display: block; margin-bottom: 2px; }
+  .connector-line {
+    width: 1px; height: 18px;
+    background: var(--border2);
+    margin: 0 auto;
+  }
+  .branch-lines {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 280px;
+    height: 20px;
+    position: relative;
+  }
+  .branch-lines::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 1px;
+    background: var(--border2);
+  }
+  .branch-lines::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    width: 1px; height: 20px;
+    background: var(--border2);
+  }
+  .branch-l, .branch-r {
+    position: absolute;
+    top: 0;
+    width: 1px; height: 20px;
+    background: var(--border2);
+  }
+  .branch-l { left: 20%; }
+  .branch-r { right: 20%; }
+
+  .multi-explain h3 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .multi-explain p {
+    font-size: .82rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: .8rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .feature-icon {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ─── KEY CONCEPTS ─── */
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 48px;
+    animation: fadeUp .6s ease .45s both;
+  }
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .concept-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .concept-card h4 {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .concept-card p {
+    font-size: .75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp .6s ease .5s both;
+  }
+  .footer span { color: var(--agentic-m); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: .5; }
+    50%      { opacity: 1; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 720px) {
+    .compare-strip { grid-template-columns: 1fr; }
+    .vs-col { display: none; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .concepts-grid { grid-template-columns: repeat(2,1fr); }
+    .multi-wrap { grid-template-columns: 1fr; }
+    .spectrum-examples { grid-template-columns: repeat(2,1fr); }
+    .header-inner { grid-template-columns: 1fr; }
+    .header-legend { flex-direction: row; flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <div>
+        <div class="eyebrow">Infográfico · Programação com IA</div>
+        <h1>IA Agents &amp;<br><em>Agentic AI</em></h1>
+        <p class="desc">O que são agentes de inteligência artificial, como diferem da IA convencional e quais são os padrões arquiteturais que definem sistemas verdadeiramente autônomos.</p>
+      </div>
+      <div class="header-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--agent-m)"></div>AI Agent</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--agentic-m)"></div>Agentic AI</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--both-m)"></div>Conceito compartilhado</div>
+      </div>
+    </div>
+    <div class="rule"></div>
+  </header>
+
+  <!-- ═══════════ COMPARAÇÃO ═══════════ -->
+  <div class="section-label">01 — Diferenças fundamentais</div>
+  <div class="compare-strip">
+
+    <!-- AI Agent -->
+    <div class="compare-col agent">
+      <div class="compare-head">
+        <div class="type">AI Agent</div>
+        <h2>Agente de IA</h2>
+        <p>Um sistema de IA que percebe o ambiente, toma decisões e executa ações para atingir um objetivo. É a <strong>unidade básica</strong> de autonomia.</p>
+      </div>
+      <div class="compare-body">
+        <div class="compare-row"><div class="dot agent-dot"></div><span><strong>Escopo definido</strong> — atua dentro de um domínio específico com ferramentas pré-configuradas</span></div>
+        <div class="compare-row"><div class="dot agent-dot"></div><span><strong>Loop percepcão → decisão → ação</strong> — ciclo fechado e repetível</span></div>
+        <div class="compare-row"><div class="dot agent-dot"></div><span><strong>Pode ter memória</strong> de curto ou longo prazo para manter contexto</span></div>
+        <div class="compare-row"><div class="dot agent-dot"></div><span><strong>Usa ferramentas</strong> — APIs, buscas, código, bancos de dados</span></div>
+        <div class="compare-row"><div class="dot agent-dot"></div><span><strong>Responsabilidade única</strong> — geralmente executa um tipo de tarefa bem definido</span></div>
+        <div class="compare-row"><div class="dot agent-dot"></div><span><strong>Pode ser supervisionado</strong> por humano (Human-in-the-loop)</span></div>
+      </div>
+    </div>
+
+    <div class="vs-col"><div class="vs-badge">vs</div></div>
+
+    <!-- Agentic AI -->
+    <div class="compare-col agentic">
+      <div class="compare-head">
+        <div class="type">Agentic AI</div>
+        <h2>IA Agêntica</h2>
+        <p>Um <strong>paradigma</strong> de sistemas onde múltiplos agentes colaboram de forma autônoma, planejam em longo prazo e se adaptam dinamicamente.</p>
+      </div>
+      <div class="compare-body">
+        <div class="compare-row"><div class="dot agentic-dot"></div><span><strong>Escopo aberto</strong> — decompõe objetivos complexos em subtarefas em tempo real</span></div>
+        <div class="compare-row"><div class="dot agentic-dot"></div><span><strong>Planejamento de longo prazo</strong> — raciocina sobre sequências de passos futuros</span></div>
+        <div class="compare-row"><div class="dot agentic-dot"></div><span><strong>Orquestração de múltiplos agentes</strong> — coordena especialistas em paralelo</span></div>
+        <div class="compare-row"><div class="dot agentic-dot"></div><span><strong>Autonomia elevada</strong> — opera com mínima intervenção humana por longos períodos</span></div>
+        <div class="compare-row"><div class="dot agentic-dot"></div><span><strong>Auto-reflexão</strong> — avalia os próprios erros e ajusta a estratégia (ReAct, Reflexion)</span></div>
+        <div class="compare-row"><div class="dot agentic-dot"></div><span><strong>Objetivos emergentes</strong> — pode decompor metas que não foram previstas explicitamente</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ LOOP DO AGENTE ═══════════ -->
+  <div class="section-label">02 — O loop de um AI Agent</div>
+  <div class="flow-section">
+    <div class="flow-diagram">
+      <div class="loop-grid">
+
+        <div class="loop-node">
+          <div class="loop-box box-perceive"><span class="icon">👁️</span>Percebe</div>
+          <div class="loop-label">ambiente / input</div>
+        </div>
+
+        <div class="loop-arrow">→</div>
+
+        <div class="loop-node">
+          <div class="loop-box box-think"><span class="icon">🧠</span>Raciocina</div>
+          <div class="loop-label">LLM / planner</div>
+        </div>
+
+        <div class="loop-arrow">→</div>
+
+        <div class="loop-node">
+          <div class="loop-box box-act"><span class="icon">⚙️</span>Age</div>
+          <div class="loop-label">tool use / código</div>
+        </div>
+
+        <div class="loop-arrow">→</div>
+
+        <div class="loop-node">
+          <div class="loop-box box-feedback"><span class="icon">📊</span>Observa</div>
+          <div class="loop-label">resultado / erro</div>
+        </div>
+
+        <div class="loop-arrow">→</div>
+
+        <div class="loop-node">
+          <div class="loop-box box-memory"><span class="icon">💾</span>Memória</div>
+          <div class="loop-label">curto / longo prazo</div>
+        </div>
+
+      </div>
+      <div class="feedback-arc">↩ loop se repete até atingir o objetivo ou critério de parada</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ EXEMPLOS CARDS ═══════════ -->
+  <div class="section-label">03 — Exemplos práticos</div>
+  <div class="cards-section">
+    <div class="cards-grid">
+
+      <!-- 1 -->
+      <div class="card" style="--card-accent: var(--agent-m)">
+        <div class="card-tag"><div class="card-tag-dot"></div>AI Agent</div>
+        <h3>Agente de busca e sumarização</h3>
+        <div class="subtitle">Search + Summarize</div>
+        <p>Recebe uma pergunta, busca na web, lê páginas, filtra e entrega um resumo estruturado — tudo sem intervenção.</p>
+        <div class="card-example">
+          <div class="ex-label">Exemplo real</div>
+          Perplexity AI, ChatGPT com browsing, Claude com pesquisa web
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="card" style="--card-accent: var(--agent-m)">
+        <div class="card-tag"><div class="card-tag-dot"></div>AI Agent</div>
+        <h3>Agente de código</h3>
+        <div class="subtitle">Code Agent</div>
+        <p>Lê uma issue ou especificação, escreve código, roda testes, interpreta erros e itera até o código passar.</p>
+        <div class="card-example">
+          <div class="ex-label">Exemplo real</div>
+          GitHub Copilot Workspace, Devin, Claude Code, Cursor Agent
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="card" style="--card-accent: var(--agent-m)">
+        <div class="card-tag"><div class="card-tag-dot"></div>AI Agent</div>
+        <h3>Agente de automação de dados</h3>
+        <div class="subtitle">Data Agent</div>
+        <p>Conecta-se a bancos de dados, gera queries, analisa resultados e produz relatórios ou dashboards automaticamente.</p>
+        <div class="card-example">
+          <div class="ex-label">Exemplo real</div>
+          Julius AI, Pandas AI, agentes no Snowflake Cortex
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="card" style="--card-accent: var(--agentic-m)">
+        <div class="card-tag"><div class="card-tag-dot"></div>Agentic AI</div>
+        <h3>Pipeline de pesquisa autônoma</h3>
+        <div class="subtitle">Research Pipeline</div>
+        <p>Dado um tema, decompõe em subtópicos, delega buscas a sub-agentes, sintetiza fontes e redige um relatório completo.</p>
+        <div class="card-example">
+          <div class="ex-label">Exemplo real</div>
+          OpenAI Deep Research, Gemini Deep Research, Claude Research
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="card" style="--card-accent: var(--agentic-m)">
+        <div class="card-tag"><div class="card-tag-dot"></div>Agentic AI</div>
+        <h3>Agente de desenvolvimento de software</h3>
+        <div class="subtitle">Software Engineer Agent</div>
+        <p>Orquestra agentes de planejamento, codificação, revisão e QA para entregar uma feature completa a partir de uma descrição em linguagem natural.</p>
+        <div class="card-example">
+          <div class="ex-label">Exemplo real</div>
+          Devin (Cognition), SWE-Agent, AutoCodeRover
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="card" style="--card-accent: var(--agentic-m)">
+        <div class="card-tag"><div class="card-tag-dot"></div>Agentic AI</div>
+        <h3>Assistente pessoal autônomo</h3>
+        <div class="subtitle">Personal AI OS</div>
+        <p>Gerencia e-mails, agenda reuniões, delega tarefas, monitora projetos e toma ações em nome do usuário durante horas sem supervisão.</p>
+        <div class="card-example">
+          <div class="ex-label">Exemplo real</div>
+          Rabbit R1, Operator (OpenAI), agentes no Zapier AI
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════ ESPECTRO ═══════════ -->
+  <div class="section-label">04 — Espectro de autonomia</div>
+  <div class="spectrum-section">
+    <div class="spectrum-wrap">
+      <div style="font-size:.82rem; color:var(--muted)">Do modelo reativo ao sistema totalmente autônomo</div>
+      <div class="spectrum-bar"></div>
+      <div class="spectrum-ticks">
+        <span>Reativo</span>
+        <span>Assistivo</span>
+        <span>Agente simples</span>
+        <span>Agente avançado</span>
+        <span>Agentic AI</span>
+      </div>
+      <div class="spectrum-examples">
+        <div class="spec-item">
+          <div class="spec-dot" style="background:var(--agent-l);border:1.5px solid var(--agent-m)"></div>
+          <div class="spec-name">ChatGPT básico</div>
+          <div class="spec-desc">Responde perguntas. Sem ações externas. Uma rodada por vez.</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-dot" style="background:#d8e8d0;border:1.5px solid #5080a0"></div>
+          <div class="spec-name">Copilot / autocomplete</div>
+          <div class="spec-desc">Sugere código ou texto. Humano decide e executa.</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-dot" style="background:#e0d8f0;border:1.5px solid #9050a0"></div>
+          <div class="spec-name">Agent com tools</div>
+          <div class="spec-desc">Busca na web, executa código. Loop curto com aprovação humana.</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-dot" style="background:#f0d8d8;border:1.5px solid var(--agentic-m)"></div>
+          <div class="spec-name">Agente avançado</div>
+          <div class="spec-desc">Planeja, itera, usa múltiplas ferramentas. Horas sem interação.</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-dot" style="background:var(--agentic-l);border:1.5px solid var(--agentic-h)"></div>
+          <div class="spec-name">Agentic AI system</div>
+          <div class="spec-desc">Multi-agente, objetivos abertos, adaptação dinâmica, quase autônomo.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MULTI-AGENTE ═══════════ -->
+  <div class="section-label">05 — Sistemas multi-agente</div>
+  <div class="multi-section">
+    <div class="multi-wrap">
+      <div class="multi-diagram">
+        <!-- Orchestrator -->
+        <div class="orchestrator">
+          <div class="orch-label">Orchestrator</div>
+          🎯 Agente Principal
+        </div>
+        <div class="connector-line"></div>
+        <!-- Branch lines via flexbox trick -->
+        <div style="width:100%;max-width:320px;height:16px;position:relative;border-top:1px solid var(--border2);">
+          <div style="position:absolute;top:0;left:16%;width:1px;height:16px;background:var(--border2)"></div>
+          <div style="position:absolute;top:0;left:50%;width:1px;height:16px;background:var(--border2)"></div>
+          <div style="position:absolute;top:0;right:16%;width:1px;height:16px;background:var(--border2)"></div>
+        </div>
+        <div class="sub-agents">
+          <div class="sub-agent"><span class="sub-icon">🔍</span>Busca</div>
+          <div class="sub-agent"><span class="sub-icon">💻</span>Código</div>
+          <div class="sub-agent"><span class="sub-icon">📝</span>Escrita</div>
+        </div>
+        <div style="width:100%;max-width:320px;height:16px;position:relative;border-top:1px solid var(--border2);">
+          <div style="position:absolute;top:0;left:50%;width:1px;height:16px;background:var(--border2)"></div>
+        </div>
+        <div style="background:var(--both-l);border:1px solid var(--both-m);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:600;color:var(--both);text-align:center;width:100%;max-width:220px;">
+          💬 Memória / Estado compartilhado
+        </div>
+        <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;margin-top:6px;letter-spacing:1px">RESULTADO FINAL AO USUÁRIO ↑</div>
+      </div>
+
+      <div class="multi-explain">
+        <h3>Por que usar múltiplos agentes?</h3>
+        <p>Sistemas agentic avançados decompõem tarefas complexas e delegam partes a agentes especializados que rodam em paralelo, depois consolidam os resultados.</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#eef4fc">⚡</div>
+            <span><strong>Paralelismo</strong> — sub-agentes executam ao mesmo tempo, reduzindo latência total</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#eef8f0">🎯</div>
+            <span><strong>Especialização</strong> — cada agente otimizado para sua tarefa (código, busca, análise)</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#faf0e8">🔄</div>
+            <span><strong>Resiliência</strong> — se um sub-agente falha, o orquestrador pode redelegar ou tentar novamente</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:#faeaf4">📏</div>
+            <span><strong>Contexto longo eficiente</strong> — cada agente vê apenas o que precisa, sem encher o contexto do LLM</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon" style="background:var(--agentic-l)">🛡️</div>
+            <span><strong>Verificação cruzada</strong> — um agente crítico pode revisar o output de outro antes de entregá-lo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CONCEITOS-CHAVE ═══════════ -->
+  <div class="section-label">06 — Conceitos-chave</div>
+  <div class="concepts-grid">
+    <div class="concept-card">
+      <span class="concept-icon">🛠️</span>
+      <h4>Tool Use</h4>
+      <p>Capacidade do agente de chamar APIs, executar código, fazer buscas ou manipular arquivos como "ferramentas".</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">🗺️</span>
+      <h4>Planning</h4>
+      <p>Decomposição de objetivos em passos menores e ordenação lógica de ações antes de executar.</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">💾</span>
+      <h4>Memory</h4>
+      <p>Memória de curto prazo (contexto da janela) e longo prazo (vetores, banco de dados, arquivos).</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">🔁</span>
+      <h4>ReAct Loop</h4>
+      <p>Padrão: <em>Reason</em> (raciocinar) + <em>Act</em> (agir). O agente alterna entre pensar e executar iterativamente.</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">🪞</span>
+      <h4>Reflexion</h4>
+      <p>O agente avalia seu próprio output, identifica erros e regenera a resposta com base na autocrítica.</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">👥</span>
+      <h4>Human-in-the-loop</h4>
+      <p>O agente pausa e pede aprovação humana antes de executar ações irreversíveis ou de alto risco.</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">🧩</span>
+      <h4>MCP / Function Calling</h4>
+      <p>Protocolos padronizados (como o Model Context Protocol) que definem como agentes se conectam a ferramentas e serviços externos.</p>
+    </div>
+    <div class="concept-card">
+      <span class="concept-icon">🌐</span>
+      <h4>Ambiente (Environment)</h4>
+      <p>O "mundo" no qual o agente age — pode ser o navegador, sistema de arquivos, API externa, terminal ou outro agente.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    Programação com IA · <span>Agentes &amp; Agentic AI</span> · Infográfico didático
+  </footer>
+
+</div>
+</body>
+</html>
