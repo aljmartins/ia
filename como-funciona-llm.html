@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como funciona um LLM?</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --border: #ddddd8;
+    --text: #1a1a2e;
+    --muted: #6e6e8a;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --purple-light: #EEEDFE;
+    --purple-mid: #7F77DD;
+    --purple-dark: #3C3489;
+    --purple-deeper: #26215C;
+    --teal-light: #E1F5EE;
+    --teal-mid: #1D9E75;
+    --teal-dark: #085041;
+    --teal-deeper: #04342C;
+    --amber-light: #FAEEDA;
+    --amber-mid: #EF9F27;
+    --amber-dark: #633806;
+    --coral-light: #FAECE7;
+    --coral-mid: #D85A30;
+    --step-active: #0f6e56;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(15,110,86,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,110,86,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown .7s ease both;
+  }
+  .header .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--step-active);
+    border: 1px solid var(--step-active);
+    padding: 4px 14px;
+    margin-bottom: 18px;
+    opacity: .8;
+  }
+  .header h1 {
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -1px;
+  }
+  .header h1 span { color: var(--step-active); }
+  .header p {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    color: var(--muted);
+    letter-spacing: .5px;
+  }
+  .divider {
+    width: 50px; height: 2px;
+    background: var(--step-active);
+    margin: 18px auto 0;
+    opacity: .5;
+  }
+
+  /* Step nav */
+  .step-nav {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    animation: fadeUp .6s ease .2s both;
+  }
+  .step-btn {
+    flex: 1;
+    padding: 12px 8px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: var(--surface);
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    transition: background .2s, color .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .step-btn:last-child { border-right: none; }
+  .step-btn .num {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .step-btn.active {
+    background: rgba(15,110,86,.1);
+    color: var(--step-active);
+  }
+  .step-btn.active .num { color: var(--step-active); }
+  .step-btn:hover:not(.active) {
+    background: rgba(0,0,0,.04);
+    color: var(--text);
+  }
+
+  /* Panel */
+  .panel { display: none; flex-direction: column; gap: 20px; }
+  .panel.visible { display: flex; animation: fadeUp .4s ease both; }
+
+  /* Diagram card */
+  .diag-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 8px 0 4px;
+  }
+
+  /* Explain box */
+  .explain {
+    background: rgba(15,110,86,.04);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--step-active);
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-size: .9rem;
+    color: #44445a;
+    line-height: 1.7;
+  }
+  .explain strong { color: var(--text); font-weight: 700; }
+
+  /* Concepts */
+  .concepts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+  }
+  .badge.green  { border-color: var(--teal-mid);   color: var(--teal-mid);   background: rgba(29,158,117,.1); }
+  .badge.purple { border-color: var(--purple-mid); color: var(--purple-mid); background: rgba(127,119,221,.1); }
+  .badge.amber  { border-color: var(--amber-mid);  color: var(--amber-mid);  background: rgba(239,159,39,.1); }
+  .badge.cyan   { border-color: #0f6e56; color: #085041; background: rgba(15,110,86,.08); }
+
+  /* Nav buttons */
+  .nav-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+  .nav-btn {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.15); }
+  .nav-btn.primary {
+    background: var(--step-active);
+    color: #ffffff;
+    border-color: var(--step-active);
+  }
+  .nav-btn.primary:hover { opacity: .88; }
+
+  /* Progress */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--step-active);
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 56px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .footer span { color: var(--step-active); }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes tokenPop {
+    from { opacity: 0; transform: scale(.75) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes attPulse {
+    0%,100% { stroke-opacity: .15; }
+    50%      { stroke-opacity: .75; }
+  }
+  @keyframes layerGlow {
+    0%,100% { opacity: .6; }
+    50%      { opacity: 1; }
+  }
+  @keyframes conv {
+    to { stroke-dashoffset: -20; }
+  }
+
+  .token-anim { animation: tokenPop .35s ease both; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .step-btn { font-size: 10px; padding: 10px 4px; }
+    .step-btn .num { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div class="tag">Infográfico Interativo · LLM</div>
+    <h1>Como funciona<br>um <span>LLM?</span></h1>
+    <p>Large Language Model — passo a passo</p>
+    <div class="divider"></div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress" style="width:20%"></div>
+  </div>
+
+  <nav class="step-nav">
+    <button class="step-btn active" onclick="goTo(0)"><span class="num">01</span>Tokens</button>
+    <button class="step-btn" onclick="goTo(1)"><span class="num">02</span>Embeddings</button>
+    <button class="step-btn" onclick="goTo(2)"><span class="num">03</span>Atenção</button>
+    <button class="step-btn" onclick="goTo(3)"><span class="num">04</span>Camadas</button>
+    <button class="step-btn" onclick="goTo(4)"><span class="num">05</span>Saída</button>
+  </nav>
+
+  <!-- ═══════════════════════════════════ STEP 0: Tokens ═══════════════════════════════ -->
+  <div class="panel visible" id="panel-0">
+    <div class="diag-card">
+      <svg width="100%" viewBox="0 0 820 240" role="img">
+        <title>Tokenização de texto</title>
+        <desc>Um texto é dividido em tokens — pedaços de palavras ou caracteres</desc>
+        <defs>
+          <marker id="a0" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#6e6e8a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <!-- Input sentence -->
+        <rect x="20" y="18" width="780" height="44" rx="8" fill="none" stroke="#1e1e2e" stroke-width="1"/>
+        <text font-family="'Space Mono', monospace" font-size="15" fill="#6e6e8a" x="410" y="40" text-anchor="middle" dominant-baseline="central">"O gato dormia no tapete quente"</text>
+        <!-- Arrow -->
+        <line x1="410" y1="62" x2="410" y2="85" stroke="#6e6e8a" stroke-width="1" marker-end="url(#a0)"/>
+        <text font-family="'Syne', sans-serif" font-size="11" fill="#6e6e8a" x="428" y="75" dominant-baseline="central">tokenizar</text>
+        <!-- Tokens rendered by JS -->
+        <g id="tokens-svg"></g>
+      </svg>
+    </div>
+    <div class="explain">
+      O texto de entrada é dividido em <strong>tokens</strong> — pequenos pedaços de texto que podem ser palavras inteiras, partes de palavras ou pontuação. Um LLM não lê letras nem palavras completas: ele lê tokens. A frase média em português gera cerca de <strong>1,3× seu número de palavras</strong> em tokens. Cada token tem um ID numérico no vocabulário do modelo.
+    </div>
+    <div class="concepts">
+      <span class="badge cyan">~100.000 tokens no vocabulário</span>
+      <span class="badge">BPE — Byte Pair Encoding</span>
+      <span class="badge purple">Tokenizer</span>
+      <span class="badge">Subword splitting</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ STEP 1: Embeddings ════════════════════════════ -->
+  <div class="panel" id="panel-1">
+    <div class="diag-card">
+      <svg width="100%" viewBox="0 0 820 240" role="img">
+        <title>Embeddings: tokens viram vetores numéricos</title>
+        <desc>Cada token é convertido em um vetor de números que captura seu significado semântico</desc>
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#6e6e8a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <!-- Token boxes -->
+        <rect x="30"  y="18" width="90" height="36" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#26215C" x="75"  y="36" text-anchor="middle" dominant-baseline="central">O</text>
+        <rect x="140" y="18" width="90" height="36" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#26215C" x="185" y="36" text-anchor="middle" dominant-baseline="central">gato</text>
+        <rect x="250" y="18" width="90" height="36" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#04342C" x="295" y="36" text-anchor="middle" dominant-baseline="central">dorm</text>
+        <rect x="360" y="18" width="90" height="36" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#04342C" x="405" y="36" text-anchor="middle" dominant-baseline="central">ia</text>
+        <rect x="470" y="18" width="90" height="36" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#412402" x="515" y="36" text-anchor="middle" dominant-baseline="central">no</text>
+        <rect x="580" y="18" width="90" height="36" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#412402" x="625" y="36" text-anchor="middle" dominant-baseline="central">tapete</text>
+        <rect x="690" y="18" width="90" height="36" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="600" fill="#4A1B0C" x="735" y="36" text-anchor="middle" dominant-baseline="central">quente</text>
+
+        <!-- Arrows down -->
+        <line x1="75"  y1="54" x2="75"  y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+        <line x1="185" y1="54" x2="185" y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+        <line x1="295" y1="54" x2="295" y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+        <line x1="405" y1="54" x2="405" y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+        <line x1="515" y1="54" x2="515" y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+        <line x1="625" y1="54" x2="625" y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+        <line x1="735" y1="54" x2="735" y2="80" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a1)"/>
+
+        <!-- Embedding matrix label -->
+        <text font-family="'Space Mono',monospace" font-size="10" fill="#6e6e8a" x="410" y="77" text-anchor="middle" dominant-baseline="central">Embedding matrix — 4096 dimensões por token</text>
+
+        <!-- Heatmap vectors rendered by JS -->
+        <g id="emb-vectors"></g>
+
+        <text font-family="'Syne',sans-serif" font-size="11" fill="#6e6e8a" x="410" y="228" text-anchor="middle" dominant-baseline="central">Vetores próximos = palavras de significado semelhante</text>
+      </svg>
+    </div>
+    <div class="explain">
+      Cada token é mapeado para um <strong>vetor de números</strong> com milhares de dimensões — o chamado embedding. Esses números codificam o <strong>significado semântico</strong> do token. Palavras parecidas ficam próximas no espaço vetorial: "gato" e "felino" têm vetores semelhantes. Além do significado, o modelo soma um <strong>positional encoding</strong> para saber a posição de cada token na sequência.
+    </div>
+    <div class="concepts">
+      <span class="badge purple">4096+ dimensões</span>
+      <span class="badge">Espaço semântico</span>
+      <span class="badge green">Positional encoding</span>
+      <span class="badge amber">Matriz de embeddings</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════ STEP 2: Atenção ═════════════════════════════ -->
+  <div class="panel" id="panel-2">
+    <div class="diag-card">
+      <svg width="100%" viewBox="0 0 820 270" role="img">
+        <title>Mecanismo de atenção</title>
+        <desc>Cada token consulta os demais com pesos diferentes, representados pela espessura das linhas</desc>
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <!-- Token row -->
+        <rect x="20"  y="205" width="85" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="62"  y="224" text-anchor="middle" dominant-baseline="central">O</text>
+
+        <rect x="120" y="205" width="85" height="38" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.2"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#412402" x="162" y="224" text-anchor="middle" dominant-baseline="central">gato</text>
+
+        <rect x="220" y="205" width="85" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="262" y="224" text-anchor="middle" dominant-baseline="central">dorm</text>
+
+        <rect x="320" y="205" width="85" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="362" y="224" text-anchor="middle" dominant-baseline="central">ia</text>
+
+        <rect x="420" y="205" width="85" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="462" y="224" text-anchor="middle" dominant-baseline="central">no</text>
+
+        <rect x="520" y="205" width="85" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="562" y="224" text-anchor="middle" dominant-baseline="central">tapete</text>
+
+        <rect x="620" y="205" width="85" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="662" y="224" text-anchor="middle" dominant-baseline="central">quente</text>
+
+        <rect x="720" y="205" width="80" height="38" rx="6" fill="#f0f0ea" stroke="#ddddd8" stroke-width="0.8"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#6e6e8a" x="760" y="224" text-anchor="middle" dominant-baseline="central">⟨eos⟩</text>
+
+        <!-- Attention lines from "gato" (cx=162) -->
+        <path d="M162 205 Q112 160 62 160" fill="none" stroke="#EF9F27" stroke-width="1" style="animation: attPulse 2.8s ease-in-out infinite 0s"/>
+        <path d="M162 205 Q162 140 162 120" fill="none" stroke="#EF9F27" stroke-width="5.5" style="animation: attPulse 2.2s ease-in-out infinite .1s" marker-end="url(#a2)"/>
+        <path d="M162 205 Q212 130 262 120" fill="none" stroke="#EF9F27" stroke-width="3.5" style="animation: attPulse 2.5s ease-in-out infinite .3s" marker-end="url(#a2)"/>
+        <path d="M162 205 Q262 100 362 90"  fill="none" stroke="#EF9F27" stroke-width="1.8" style="animation: attPulse 2.9s ease-in-out infinite .5s" marker-end="url(#a2)"/>
+        <path d="M162 205 Q312 80 462 70"   fill="none" stroke="#EF9F27" stroke-width="1.2" style="animation: attPulse 3.1s ease-in-out infinite .7s" marker-end="url(#a2)"/>
+        <path d="M162 205 Q362 55 562 50"   fill="none" stroke="#EF9F27" stroke-width="3"   style="animation: attPulse 2.7s ease-in-out infinite .9s" marker-end="url(#a2)"/>
+        <path d="M162 205 Q462 40 662 35"   fill="none" stroke="#EF9F27" stroke-width="1.5" style="animation: attPulse 3.3s ease-in-out infinite 1.1s" marker-end="url(#a2)"/>
+        <path d="M162 205 Q462 25 760 22"   fill="none" stroke="#EF9F27" stroke-width="0.7" style="animation: attPulse 3.6s ease-in-out infinite 1.3s"/>
+
+        <!-- Labels -->
+        <rect x="260" y="168" width="300" height="22" rx="4" fill="rgba(245,245,240,.88)"/>
+        <text font-family="'Space Mono',monospace" font-size="10" fill="#BA7517" x="410" y="179" text-anchor="middle" dominant-baseline="central">Espessura = peso de atenção a partir de "gato"</text>
+
+        <text font-family="'Syne',sans-serif" font-size="11" fill="#6e6e8a" x="162" y="196" text-anchor="middle">consulta</text>
+      </svg>
+    </div>
+    <div class="explain">
+      O mecanismo de <strong>atenção (self-attention)</strong> permite que cada token "consulte" todos os outros e decida quais são mais relevantes. São calculados três vetores para cada token: <strong>Query</strong> (o que estou buscando?), <strong>Key</strong> (o que ofereço?) e <strong>Value</strong> (qual informação passo?). O produto entre Q e K gera os pesos — "gato" presta muita atenção em "tapete" e "dormia" porque descrevem onde está e o que faz.
+    </div>
+    <div class="concepts">
+      <span class="badge amber">Query · Key · Value</span>
+      <span class="badge purple">Multi-head attention</span>
+      <span class="badge">Self-attention</span>
+      <span class="badge cyan">Softmax dos pesos</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════ STEP 3: Camadas ═════════════════════════════ -->
+  <div class="panel" id="panel-3">
+    <div class="diag-card">
+      <svg width="100%" viewBox="0 0 820 290" role="img">
+        <title>Camadas empilhadas do transformer</title>
+        <desc>O LLM empilha dezenas de camadas, cada uma refinando a compreensão dos tokens</desc>
+        <defs>
+          <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#6e6e8a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- Layers -->
+        <rect x="100" y="16"  width="600" height="38" rx="7" fill="rgba(29,158,117,.18)" stroke="#1D9E75" stroke-width="1" style="animation: layerGlow 2.5s ease-in-out infinite 0s"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#085041" x="400" y="35" text-anchor="middle" dominant-baseline="central">Camada 96 — representação final refinada</text>
+
+        <rect x="100" y="60"  width="600" height="30" rx="6" fill="rgba(29,158,117,.12)" stroke="#1D9E75" stroke-width="0.7" opacity=".75" style="animation: layerGlow 2.5s ease-in-out infinite .15s"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#1D9E75" x="400" y="75" text-anchor="middle" dominant-baseline="central">Camada 95</text>
+
+        <rect x="100" y="96"  width="600" height="26" rx="5" fill="rgba(29,158,117,.08)" stroke="#1D9E75" stroke-width="0.6" opacity=".6" style="animation: layerGlow 2.5s ease-in-out infinite .3s"/>
+        <text font-family="'Syne',sans-serif" font-size="11" fill="#1D9E75" x="400" y="109" text-anchor="middle" dominant-baseline="central">Camada 94</text>
+
+        <text font-family="'Syne',sans-serif" font-size="22" fill="#6e6e8a" x="400" y="147" text-anchor="middle" dominant-baseline="central">· · ·</text>
+
+        <rect x="100" y="163" width="600" height="26" rx="5" fill="rgba(127,119,221,.08)" stroke="#7F77DD" stroke-width="0.6" opacity=".6"/>
+        <text font-family="'Syne',sans-serif" font-size="11" fill="#7F77DD" x="400" y="176" text-anchor="middle" dominant-baseline="central">Camada 3</text>
+
+        <rect x="100" y="195" width="600" height="30" rx="6" fill="rgba(127,119,221,.12)" stroke="#7F77DD" stroke-width="0.7" opacity=".75"/>
+        <text font-family="'Syne',sans-serif" font-size="12" fill="#7F77DD" x="400" y="210" text-anchor="middle" dominant-baseline="central">Camada 2</text>
+
+        <rect x="100" y="231" width="600" height="38" rx="7" fill="rgba(127,119,221,.18)" stroke="#7F77DD" stroke-width="1"/>
+        <text font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#3C3489" x="400" y="250" text-anchor="middle" dominant-baseline="central">Camada 1 — embeddings de entrada</text>
+
+        <!-- Side arrow -->
+        <line x1="72" y1="270" x2="72" y2="16" stroke="#6e6e8a" stroke-width="0.8" marker-end="url(#a3)"/>
+        <text font-family="'Space Mono',monospace" font-size="10" fill="#6e6e8a" x="62" y="143" text-anchor="middle" dominant-baseline="central" transform="rotate(-90,62,143)">96 camadas</text>
+
+        <!-- Right labels -->
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="714" y="35" dominant-baseline="central">raciocínio</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="714" y="109" dominant-baseline="central">semântica</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="714" y="250" dominant-baseline="central">sintaxe</text>
+      </svg>
+    </div>
+    <div class="explain">
+      O transformer empilha <strong>dezenas ou centenas de camadas idênticas</strong>. Cada camada aplica atenção e uma rede neural simples (feed-forward), refinando progressivamente a compreensão do texto. As camadas iniciais captam <strong>sintaxe</strong>; as intermediárias, <strong>semântica</strong>; as finais, <strong>raciocínio e contexto longo</strong>. GPT-4, por exemplo, possui ~96 camadas; modelos menores podem ter 12–32.
+    </div>
+    <div class="concepts">
+      <span class="badge green">Feed-forward network</span>
+      <span class="badge">Layer normalization</span>
+      <span class="badge purple">Residual connections</span>
+      <span class="badge amber">96+ camadas (GPT-4)</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════ STEP 4: Saída ═══════════════════════════════ -->
+  <div class="panel" id="panel-4">
+    <div class="diag-card">
+      <svg width="100%" viewBox="0 0 820 270" role="img">
+        <title>Geração de saída token a token</title>
+        <desc>O LLM converte vetores em probabilidades e escolhe o próximo token iterativamente</desc>
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#6e6e8a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+          <marker id="a4g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#0f6e56" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- Vector box -->
+        <rect x="18" y="50" width="120" height="160" rx="8" fill="rgba(127,119,221,.1)" stroke="#7F77DD" stroke-width="0.8"/>
+        <text font-family="'Space Mono',monospace" font-size="10" fill="#7F77DD" x="78" y="68" text-anchor="middle" dominant-baseline="central">Vetor final</text>
+        <rect x="30" y="82" width="65" height="7" rx="2" fill="#7F77DD" opacity=".7"/>
+        <rect x="30" y="95" width="42" height="7" rx="2" fill="#7F77DD" opacity=".5"/>
+        <rect x="30" y="108" width="78" height="7" rx="2" fill="#7F77DD" opacity=".85"/>
+        <rect x="30" y="121" width="30" height="7" rx="2" fill="#7F77DD" opacity=".4"/>
+        <rect x="30" y="134" width="55" height="7" rx="2" fill="#7F77DD" opacity=".6"/>
+        <rect x="30" y="147" width="80" height="7" rx="2" fill="#7F77DD" opacity=".9"/>
+        <rect x="30" y="160" width="48" height="7" rx="2" fill="#7F77DD" opacity=".55"/>
+        <rect x="30" y="173" width="66" height="7" rx="2" fill="#7F77DD" opacity=".72"/>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="78" y="200" text-anchor="middle">4096 valores</text>
+
+        <!-- Arrow + label -->
+        <line x1="138" y1="130" x2="172" y2="130" stroke="#6e6e8a" stroke-width="1" marker-end="url(#a4)"/>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="155" y="122" text-anchor="middle">softmax</text>
+
+        <!-- Probability bars -->
+        <rect x="178" y="30" width="310" height="210" rx="8" fill="rgba(255,255,255,.03)" stroke="#1e1e2e" stroke-width="0.8"/>
+        <text font-family="'Space Mono',monospace" font-size="10" fill="#6e6e8a" x="333" y="50" text-anchor="middle" dominant-baseline="central">Probabilidades dos próximos tokens</text>
+
+        <!-- estava 3% -->
+        <rect x="196" y="215" width="38" height="6"  rx="1" fill="#7F77DD" opacity=".4" transform="rotate(180,215,215)"/>
+        <text font-family="'Syne',sans-serif" font-size="10" fill="#6e6e8a" x="215" y="228" text-anchor="middle">estava</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#7F77DD" x="215" y="206" text-anchor="middle">3%</text>
+
+        <!-- dormia 14% -->
+        <rect x="248" y="215" width="38" height="45" rx="2" fill="#7F77DD" opacity=".55" transform="rotate(180,267,215)"/>
+        <text font-family="'Syne',sans-serif" font-size="10" fill="#6e6e8a" x="267" y="228" text-anchor="middle">dormia</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#7F77DD" x="267" y="167" text-anchor="middle">14%</text>
+
+        <!-- ronronava 40% — winner -->
+        <rect x="300" y="215" width="38" height="115" rx="2" fill="#00f5c4" opacity=".7" transform="rotate(180,319,215)"/>
+        <text font-family="'Syne',sans-serif" font-size="10" font-weight="700" fill="#e8e8f0" x="319" y="228" text-anchor="middle">ronronava</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#00f5c4" x="319" y="96" text-anchor="middle" font-weight="700">40%</text>
+
+        <!-- corria 22% -->
+        <rect x="352" y="215" width="38" height="65" rx="2" fill="#7F77DD" opacity=".5" transform="rotate(180,371,215)"/>
+        <text font-family="'Syne',sans-serif" font-size="10" fill="#6e6e8a" x="371" y="228" text-anchor="middle">corria</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#7F77DD" x="371" y="147" text-anchor="middle">22%</text>
+
+        <!-- pulava 8% -->
+        <rect x="404" y="215" width="38" height="22" rx="2" fill="#7F77DD" opacity=".4" transform="rotate(180,423,215)"/>
+        <text font-family="'Syne',sans-serif" font-size="10" fill="#6e6e8a" x="423" y="228" text-anchor="middle">pulava</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#7F77DD" x="423" y="190" text-anchor="middle">8%</text>
+
+        <!-- Arrow + label to chosen -->
+        <line x1="488" y1="130" x2="522" y2="130" stroke="#0f6e56" stroke-width="1.2" marker-end="url(#a4g)"/>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="505" y="122" text-anchor="middle">sampling</text>
+
+        <!-- Chosen token -->
+        <rect x="528" y="95" width="172" height="70" rx="8" fill="rgba(15,110,86,.1)" stroke="#0f6e56" stroke-width="1.2"/>
+        <text font-family="'Syne',sans-serif" font-size="15" font-weight="700" fill="#085041" x="614" y="125" text-anchor="middle" dominant-baseline="central">ronronava</text>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#1D9E75" x="614" y="150" text-anchor="middle" dominant-baseline="central">token escolhido ✓</text>
+
+        <!-- Loop arrow -->
+        <path d="M614 165 Q614 250 400 250 Q200 250 78 215" fill="none" stroke="#6e6e8a" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#a4)"/>
+        <text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="400" y="263" text-anchor="middle">repetir para cada novo token gerado</text>
+      </svg>
+    </div>
+    <div class="explain">
+      O vetor final é convertido em <strong>probabilidades para cada token do vocabulário</strong> (via softmax). O modelo seleciona o próximo token com base nessas probabilidades — a <strong>temperatura</strong> controla a criatividade (alta = mais aleatório, baixa = mais previsível). Esse token é adicionado ao contexto e o processo se <strong>repete</strong> até completar a resposta. É por isso que LLMs são chamados de modelos <em>autoregressivos</em>.
+    </div>
+    <div class="concepts">
+      <span class="badge cyan">Geração autoregressiva</span>
+      <span class="badge amber">Temperatura</span>
+      <span class="badge green">Top-p / Top-k sampling</span>
+      <span class="badge purple">Context window</span>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="btn-prev" onclick="goTo(currentStep-1)" style="display:none">← Anterior</button>
+    <button class="nav-btn primary" id="btn-next" onclick="goTo(currentStep+1)">Próximo →</button>
+  </div>
+
+  <footer class="footer" style="margin-top:56px;">
+    Infográfico criado com · <span>Claude</span> · Programação com IA
+  </footer>
+
+</div>
+
+<script>
+let currentStep = 0;
+const total = 5;
+
+const tokenData = [
+  { text: "O",      color: "#EEEDFE", stroke: "#7F77DD", tc: "#26215C" },
+  { text: "gato",   color: "#EEEDFE", stroke: "#7F77DD", tc: "#26215C" },
+  { text: "dorm",   color: "#E1F5EE", stroke: "#1D9E75", tc: "#04342C" },
+  { text: "ia",     color: "#E1F5EE", stroke: "#1D9E75", tc: "#04342C" },
+  { text: "no",     color: "#FAEEDA", stroke: "#EF9F27", tc: "#412402" },
+  { text: "tape",   color: "#FAEEDA", stroke: "#EF9F27", tc: "#412402" },
+  { text: "te",     color: "#FAECE7", stroke: "#D85A30", tc: "#4A1B0C" },
+  { text: "quen",   color: "#FAECE7", stroke: "#D85A30", tc: "#4A1B0C" },
+  { text: "te",     color: "#FAECE7", stroke: "#D85A30", tc: "#4A1B0C" },
+];
+
+function renderTokens() {
+  const g = document.getElementById('tokens-svg');
+  if (!g) return;
+  g.innerHTML = '';
+  const w = 70, h = 38, gap = 10;
+  const totalW = tokenData.length * (w + gap) - gap;
+  const ox = (820 - totalW) / 2;
+  tokenData.forEach((t, i) => {
+    const x = ox + i * (w + gap);
+    const delay = i * 0.07;
+    g.innerHTML += `
+      <g class="token-anim" style="animation-delay:${delay}s">
+        <rect x="${x}" y="97" width="${w}" height="${h}" rx="6" fill="${t.color}" stroke="${t.stroke}" stroke-width="0.8"/>
+        <text font-family="'Space Mono',monospace" font-size="11" font-weight="700" fill="${t.tc}" x="${x+w/2}" y="${97+h/2}" text-anchor="middle" dominant-baseline="central">${t.text}</text>
+      </g>
+      <text font-family="'Space Mono',monospace" font-size="8" fill="#6e6e8a" x="${x+w/2}" y="148" text-anchor="middle">id:${1200 + i * 37}</text>`;
+  });
+}
+
+function renderEmbVectors() {
+  const g = document.getElementById('emb-vectors');
+  if (!g) return;
+  g.innerHTML = '';
+  const positions = [75, 185, 295, 405, 515, 625, 735];
+  const colors = ['#7F77DD','#7F77DD','#1D9E75','#1D9E75','#EF9F27','#EF9F27','#D85A30'];
+  positions.forEach((cx, i) => {
+    const rows = 8, barW = 60, barH = 7, gap = 3;
+    const startY = 96;
+    for (let r = 0; r < rows; r++) {
+      const val = Math.abs(Math.sin(i * 3.7 + r * 1.9));
+      const bw = Math.max(6, Math.round(val * barW));
+      const bx = cx - barW / 2;
+      const by = startY + r * (barH + gap);
+      g.innerHTML += `<rect x="${bx}" y="${by}" width="${bw}" height="${barH}" rx="2" fill="${colors[i]}" opacity="${0.35 + val * 0.55}"/>`;
+    }
+    g.innerHTML += `<text font-family="'Space Mono',monospace" font-size="9" fill="#6e6e8a" x="${cx}" y="${startY + rows * (barH + gap) + 10}" text-anchor="middle">[…]</text>`;
+  });
+}
+
+function goTo(n) {
+  if (n < 0 || n >= total) return;
+  document.getElementById('panel-' + currentStep).classList.remove('visible');
+  document.querySelectorAll('.step-btn')[currentStep].classList.remove('active');
+  currentStep = n;
+  document.getElementById('panel-' + currentStep).classList.add('visible');
+  document.querySelectorAll('.step-btn')[currentStep].classList.add('active');
+  document.getElementById('btn-prev').style.display = currentStep === 0 ? 'none' : '';
+  document.getElementById('btn-next').style.display = currentStep === total - 1 ? 'none' : '';
+  document.getElementById('progress').style.width = ((currentStep + 1) / total * 100) + '%';
+  if (currentStep === 0) renderTokens();
+  if (currentStep === 1) renderEmbVectors();
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(currentStep + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(currentStep - 1);
+});
+
+renderTokens();
+</script>
+</body>
+</html>
