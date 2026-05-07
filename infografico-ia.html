@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programação com IA — Áreas</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4ef;
+    --surface: #ffffff;
+    --border: #dcdcd6;
+    --accent1: #0f6e56;
+    --accent2: #6040a0;
+    --accent3: #d94040;
+    --accent4: #b08800;
+    --accent5: #2277cc;
+    --accent6: #cc6600;
+    --accent7: #5548cc;
+    --accent8: #0f8c6e;
+    --text: #1a1a28;
+    --muted: #70708a;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(15,110,86,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,110,86,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 64px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .header .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent1);
+    border: 1px solid var(--accent1);
+    padding: 5px 14px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  .header h1 {
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -1px;
+  }
+
+  .header h1 span {
+    color: var(--accent1);
+  }
+
+  .header p {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 1rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+  }
+
+  .divider {
+    width: 60px;
+    height: 2px;
+    background: var(--accent1);
+    margin: 20px auto 0;
+    opacity: 0.5;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 26px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-color);
+    transition: height 0.3s ease;
+  }
+
+  .card:hover::before { height: 5px; }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--card-color);
+    opacity: 0.04;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .card:hover::after {
+    opacity: 0.09;
+    transform: scale(1.2);
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .card-num {
+    position: absolute;
+    top: 22px; right: 22px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--card-color);
+    opacity: 0.5;
+    letter-spacing: 1px;
+  }
+
+  .card h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    margin-bottom: 4px;
+    color: var(--card-color);
+  }
+
+  .card .subtitle {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .card p {
+    font-size: 0.85rem;
+    color: #55556a;
+    line-height: 1.65;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .tag-item {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.10);
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Featured card (spans 2 cols) */
+  .card.wide {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .card.wide .card-body { }
+  .card.wide .card-extra { border-left: 1px solid var(--border); padding-left: 24px; }
+
+  .card.wide .card-extra h3 {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .stack-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stack-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: #55556a;
+  }
+
+  .stack-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--card-color);
+    flex-shrink: 0;
+  }
+
+  /* Footer bar */
+  .footer {
+    margin-top: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    animation: fadeUp 1s ease 1s both;
+  }
+
+  .footer span { color: var(--accent1); }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+  .card:nth-child(5) { animation-delay: 0.5s; }
+  .card:nth-child(6) { animation-delay: 0.6s; }
+  .card:nth-child(7) { animation-delay: 0.7s; }
+  .card:nth-child(8) { animation-delay: 0.8s; }
+
+  /* Responsive */
+  @media (max-width: 680px) {
+    .card.wide {
+      grid-column: span 1;
+      display: block;
+    }
+    .card.wide .card-extra {
+      border-left: none;
+      border-top: 1px solid var(--border);
+      padding-left: 0;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="tag">Infográfico · Aula</div>
+    <h1>Programação<br>com <span>Inteligência Artificial</span></h1>
+    <p>As principais áreas e aplicações</p>
+    <div class="divider"></div>
+  </header>
+
+  <div class="grid">
+
+    <!-- 1. Machine Learning -->
+    <div class="card" style="--card-color: var(--accent1)">
+      <span class="card-num">01</span>
+      <span class="card-icon">🧠</span>
+      <h2>Machine Learning</h2>
+      <div class="subtitle">Aprendizado de Máquina</div>
+      <p>Algoritmos que aprendem padrões a partir de dados, sem serem explicitamente programados para cada situação.</p>
+      <div class="tags">
+        <span class="tag-item">Supervisionado</span>
+        <span class="tag-item">Não supervisionado</span>
+        <span class="tag-item">Por reforço</span>
+      </div>
+    </div>
+
+    <!-- 2. Deep Learning -->
+    <div class="card" style="--card-color: var(--accent2)">
+      <span class="card-num">02</span>
+      <span class="card-icon">🕸️</span>
+      <h2>Deep Learning</h2>
+      <div class="subtitle">Aprendizado Profundo</div>
+      <p>Redes neurais com múltiplas camadas capazes de reconhecer padrões complexos em imagens, texto e áudio.</p>
+      <div class="tags">
+        <span class="tag-item">Redes Neurais</span>
+        <span class="tag-item">CNN</span>
+        <span class="tag-item">Transformers</span>
+      </div>
+    </div>
+
+    <!-- 3. NLP -->
+    <div class="card" style="--card-color: var(--accent5)">
+      <span class="card-num">03</span>
+      <span class="card-icon">💬</span>
+      <h2>NLP</h2>
+      <div class="subtitle">Processamento de Linguagem Natural</div>
+      <p>Permite que máquinas entendam, interpretem e gerem linguagem humana — base dos chatbots e LLMs.</p>
+      <div class="tags">
+        <span class="tag-item">Chatbots</span>
+        <span class="tag-item">Tradução</span>
+        <span class="tag-item">LLMs</span>
+      </div>
+    </div>
+
+    <!-- 4. Visão Computacional -->
+    <div class="card" style="--card-color: var(--accent3)">
+      <span class="card-num">04</span>
+      <span class="card-icon">👁️</span>
+      <h2>Visão Computacional</h2>
+      <div class="subtitle">Computer Vision</div>
+      <p>Sistemas que interpretam imagens e vídeos para detectar objetos, rostos, movimentos e cenas.</p>
+      <div class="tags">
+        <span class="tag-item">Reconhecimento facial</span>
+        <span class="tag-item">Detecção</span>
+        <span class="tag-item">Veículos autônomos</span>
+      </div>
+    </div>
+
+    <!-- 5. IA Generativa – wide -->
+    <div class="card wide" style="--card-color: var(--accent4)">
+      <div class="card-body">
+        <span class="card-num">05</span>
+        <span class="card-icon">✨</span>
+        <h2>IA Generativa</h2>
+        <div class="subtitle">Generative AI</div>
+        <p>Modelos que criam conteúdo novo — texto, imagens, código, áudio e vídeo — com qualidade próxima à humana. É a área de maior crescimento atualmente.</p>
+        <div class="tags">
+          <span class="tag-item">LLMs</span>
+          <span class="tag-item">Imagens</span>
+          <span class="tag-item">Código</span>
+          <span class="tag-item">Áudio</span>
+        </div>
+      </div>
+      <div class="card-extra">
+        <h3>Exemplos práticos</h3>
+        <div class="stack-list">
+          <div class="stack-item"><div class="stack-dot"></div>ChatGPT / Claude — geração de texto</div>
+          <div class="stack-item"><div class="stack-dot"></div>DALL·E / Midjourney — imagens</div>
+          <div class="stack-item"><div class="stack-dot"></div>GitHub Copilot — geração de código</div>
+          <div class="stack-item"><div class="stack-dot"></div>Suno / ElevenLabs — áudio e música</div>
+          <div class="stack-item"><div class="stack-dot"></div>Sora / Runway — geração de vídeo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Agentes -->
+    <div class="card" style="--card-color: var(--accent7)">
+      <span class="card-num">06</span>
+      <span class="card-icon">🤖</span>
+      <h2>Agentes de IA</h2>
+      <div class="subtitle">AI Agents</div>
+      <p>Programas autônomos que percebem o ambiente e tomam decisões para atingir objetivos sem intervenção humana constante.</p>
+      <div class="tags">
+        <span class="tag-item">Robótica</span>
+        <span class="tag-item">Automação</span>
+        <span class="tag-item">Multi-agentes</span>
+      </div>
+    </div>
+
+    <!-- 7. Data Science -->
+    <div class="card" style="--card-color: var(--accent6)">
+      <span class="card-num">07</span>
+      <span class="card-icon">📊</span>
+      <h2>Ciência de Dados</h2>
+      <div class="subtitle">Data Science & Analytics</div>
+      <p>Uso de IA para extrair insights de grandes volumes de dados, apoiar decisões de negócio e construir modelos preditivos.</p>
+      <div class="tags">
+        <span class="tag-item">Pandas</span>
+        <span class="tag-item">Dashboards</span>
+        <span class="tag-item">Predição</span>
+      </div>
+    </div>
+
+    <!-- 8. MLOps -->
+    <div class="card" style="--card-color: var(--accent8)">
+      <span class="card-num">08</span>
+      <span class="card-icon">🛠️</span>
+      <h2>MLOps</h2>
+      <div class="subtitle">Engenharia de IA</div>
+      <p>Infraestrutura para treinar, implantar, monitorar e escalar modelos em produção de forma confiável e eficiente.</p>
+      <div class="tags">
+        <span class="tag-item">Deploy</span>
+        <span class="tag-item">Pipelines</span>
+        <span class="tag-item">Monitoramento</span>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    Linguagem principal: <span>Python</span> &nbsp;·&nbsp;
+    Frameworks: <span>PyTorch · TensorFlow · HuggingFace</span>
+  </footer>
+
+</div>
+</body>
+</html>
