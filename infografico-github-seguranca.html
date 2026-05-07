@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub + API Key — Como proteger sua chave secreta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #FAFAF8;
+  --bg2: #F2F0EC;
+  --ink: #1A1A2E;
+  --ink2: #3D3D5C;
+  --muted: #8888A0;
+  --green: #2D7D46;
+  --green-light: #EAF5EE;
+  --green-mid: #C3E6CC;
+  --red: #C0392B;
+  --red-light: #FDECEA;
+  --amber: #B7690A;
+  --amber-light: #FEF3E2;
+  --blue: #1A5C9E;
+  --blue-light: #E8F0FA;
+  --border: #DDD9D0;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(26,26,46,0.07);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* ── HEADER ── */
+.page-header {
+  background: var(--ink);
+  color: white;
+  padding: 14px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-header .ph-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.page-header .ph-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: #69f0ae;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--ink);
+  color: white;
+  padding: 80px 40px 72px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(45,125,70,0.25) 0%, transparent 70%);
+}
+.hero-kicker {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #69f0ae;
+  margin-bottom: 24px;
+  position: relative;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 20px;
+  position: relative;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero h1 em {
+  font-style: italic;
+  color: #69f0ae;
+}
+.hero-sub {
+  font-size: 18px;
+  opacity: 0.65;
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+  font-weight: 300;
+}
+
+/* ── CONTAINER ── */
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ── SEÇÕES ── */
+.section { padding: 72px 0; border-bottom: 1px solid var(--border); }
+.section:last-child { border-bottom: none; }
+
+.section-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-kicker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.15;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+.section-lead {
+  font-size: 18px;
+  color: var(--ink2);
+  font-weight: 300;
+  max-width: 600px;
+  margin-bottom: 48px;
+  line-height: 1.7;
+}
+
+/* ── CONCEITO CENTRAL — O PROBLEMA ── */
+.problem-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+.prob-card {
+  border-radius: var(--radius);
+  padding: 28px;
+  border: 1px solid;
+}
+.prob-card.bad {
+  background: var(--red-light);
+  border-color: #F5C6C2;
+}
+.prob-card.good {
+  background: var(--green-light);
+  border-color: var(--green-mid);
+}
+.prob-card .pc-icon { font-size: 32px; margin-bottom: 14px; }
+.prob-card .pc-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.bad .pc-label { color: var(--red); }
+.good .pc-label { color: var(--green); }
+.prob-card .pc-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.prob-card .pc-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; }
+
+/* ── DIAGRAMA DE FLUXO ── */
+.flow-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 40px 0;
+}
+.flow-node {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--radius);
+  padding: 20px 28px;
+  border: 1px solid var(--border);
+  background: white;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.flow-node.highlighted {
+  background: var(--green-light);
+  border-color: var(--green-mid);
+}
+.flow-node.secret-node {
+  background: var(--amber-light);
+  border-color: #F5D9A0;
+}
+.fn-icon { font-size: 28px; flex-shrink: 0; }
+.fn-body {}
+.fn-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.fn-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.fn-desc { font-size: 13px; color: var(--ink2); margin-top: 2px; }
+
+.flow-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+  gap: 2px;
+}
+.fc-line {
+  width: 2px;
+  height: 20px;
+  background: var(--border);
+}
+.fc-badge {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.fc-badge.safe { background: var(--green-light); color: var(--green); border: 1px solid var(--green-mid); }
+.fc-badge.secret { background: var(--amber-light); color: var(--amber); border: 1px solid #F5D9A0; }
+.fc-arrow {
+  width: 0; height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 9px solid var(--border);
+}
+
+/* ── ESTRUTURA DE ARQUIVOS ── */
+.file-tree-card {
+  background: #1E1E2E;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin: 32px 0;
+}
+.ftc-bar {
+  background: #2A2A3E;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ftc-dot { width: 11px; height: 11px; border-radius: 50%; }
+.ftc-bar .ftc-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: #8888A0;
+  margin-left: 6px;
+}
+.ftc-body { padding: 24px 28px; }
+.ftc-body pre {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  line-height: 2;
+  color: #CDD6F4;
+}
+.ftc-body .t-dir { color: #89DCEB; font-weight: 500; }
+.ftc-body .t-file { color: #CDD6F4; }
+.ftc-body .t-yes { color: #A6E3A1; }
+.ftc-body .t-no { color: #F38BA8; }
+.ftc-body .t-note { color: #6C7086; font-size: 12px; }
+.ftc-body .t-key { color: #FAB387; }
+.ftc-body .t-val { color: #89B4FA; }
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin: 28px 0;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.callout.danger {
+  background: var(--red-light);
+  border: 1px solid #F5C6C2;
+}
+.callout.success {
+  background: var(--green-light);
+  border: 1px solid var(--green-mid);
+}
+.callout.info {
+  background: var(--blue-light);
+  border: 1px solid #BDD3F0;
+}
+.callout.warning {
+  background: var(--amber-light);
+  border: 1px solid #F5D9A0;
+}
+.callout .co-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.callout .co-body {}
+.callout .co-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.danger .co-title { color: var(--red); }
+.success .co-title { color: var(--green); }
+.info .co-title { color: var(--blue); }
+.warning .co-title { color: var(--amber); }
+.callout .co-text { font-size: 14px; color: var(--ink2); line-height: 1.6; }
+.callout code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  background: rgba(0,0,0,0.07);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* ── PASSOS NUMERADOS ── */
+.steps { display: flex; flex-direction: column; gap: 16px; }
+.step-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.step-row:hover { transform: translateX(4px); box-shadow: 0 4px 24px rgba(26,26,46,0.1); }
+.step-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 40px;
+  color: var(--green-mid);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+.step-content {}
+.step-title {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.step-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; }
+.step-code {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 6px;
+  color: var(--ink);
+}
+
+/* ── PULL QUOTE ── */
+.pull-quote {
+  border-left: 4px solid var(--green);
+  padding: 20px 28px;
+  margin: 32px 0;
+  background: var(--green-light);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.pull-quote p {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: var(--ink);
+  line-height: 1.45;
+  font-style: italic;
+}
+
+/* ── RESUMO VISUAL FINAL ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 40px;
+}
+.sum-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.sum-card .sc-icon { font-size: 36px; margin-bottom: 12px; }
+.sum-card .sc-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.sum-card .sc-value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 13px;
+}
+footer strong { color: rgba(255,255,255,0.8); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .problem-split { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .hero { padding: 56px 24px 48px; }
+  .container { padding: 0 20px; }
+  .section { padding: 52px 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <span class="ph-label">Aula de IA · Jornalismo Esportivo</span>
+  <span class="ph-title">football-analyst-v2/</span>
+</header>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-kicker">🔐 Segurança de API · GitHub · Deploy</div>
+  <h1>Como proteger sua chave<br>e publicar no <em>GitHub</em></h1>
+  <p class="hero-sub">O que sobe, o que fica, e por que a chave secreta nunca pode aparecer no código público</p>
+</div>
+
+<!-- ── SEÇÃO 1: O PROBLEMA ── -->
+<div class="container">
+<section class="section">
+  <div class="section-kicker">01 · O problema</div>
+  <h2>A chave de API é como uma senha bancária</h2>
+  <p class="section-lead">Se alguém encontrar sua chave de API, pode fazer chamadas no seu nome — e você paga a conta. Por isso ela nunca pode aparecer em nenhum arquivo público.</p>
+
+  <div class="problem-split">
+    <div class="prob-card bad">
+      <div class="pc-icon">😱</div>
+      <div class="pc-label">Errado — Nunca faça isso</div>
+      <div class="pc-title">Chave no código</div>
+      <div class="pc-desc">Colocar <code style="font-family:'DM Mono',monospace;font-size:12px;background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">ANTHROPIC_API_KEY=sk-ant-...</code> dentro do <code style="font-family:'DM Mono',monospace;font-size:12px;background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">index.js</code> ou do <code style="font-family:'DM Mono',monospace;font-size:12px;background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">index.html</code>. Qualquer pessoa que ver o repositório no GitHub encontra a chave e pode usá-la.</div>
+    </div>
+    <div class="prob-card good">
+      <div class="pc-icon">✅</div>
+      <div class="pc-label">Certo — Como fazemos</div>
+      <div class="pc-title">Chave no <code style="font-family:'DM Mono',monospace;font-size:14px">.env</code></div>
+      <div class="pc-desc">A chave fica num arquivo separado chamado <code style="font-family:'DM Mono',monospace;font-size:12px;background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">.env</code>, que o <code style="font-family:'DM Mono',monospace;font-size:12px;background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">.gitignore</code> impede de subir ao GitHub. Só existe no servidor — nunca no repositório público.</div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <div class="co-icon">⚠️</div>
+    <div class="co-body">
+      <div class="co-title">Caso real frequente</div>
+      <div class="co-text">Bots vasculham o GitHub em tempo real procurando por chaves de API expostas. Em minutos após um commit descuidado, a chave é encontrada, usada e você recebe uma fatura inesperada. A Anthropic e outras empresas cancelam automaticamente chaves detectadas em repositórios públicos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SEÇÃO 2: ESTRUTURA DE ARQUIVOS ── -->
+<section class="section">
+  <div class="section-kicker">02 · Estrutura do projeto</div>
+  <h2>O que cada arquivo faz</h2>
+  <p class="section-lead">O projeto tem uma separação clara: código que pode ser público e segredo que nunca pode sair do servidor.</p>
+
+  <div class="file-tree-card">
+    <div class="ftc-bar">
+      <div class="ftc-dot" style="background:#FF5F57"></div>
+      <div class="ftc-dot" style="background:#FEBC2E"></div>
+      <div class="ftc-dot" style="background:#28C840"></div>
+      <span class="ftc-title">football-analyst-v2/ — estrutura completa</span>
+    </div>
+    <div class="ftc-body">
+      <pre>
+<span class="t-dir">football-analyst-v2/</span>
+│
+├── <span class="t-dir">server/</span>
+│   └── <span class="t-file">index.js</span>        <span class="t-yes">✅ sobe ao GitHub</span>   <span class="t-note">← backend Node.js (sem a chave)</span>
+│
+├── <span class="t-dir">public/</span>
+│   └── <span class="t-file">index.html</span>      <span class="t-yes">✅ sobe ao GitHub</span>   <span class="t-note">← interface do usuário</span>
+│
+├── <span class="t-file">.env.example</span>        <span class="t-yes">✅ sobe ao GitHub</span>   <span class="t-note">← template (sem chave real)</span>
+├── <span class="t-file">.gitignore</span>          <span class="t-yes">✅ sobe ao GitHub</span>   <span class="t-note">← lista o que NÃO sobe</span>
+├── <span class="t-file">package.json</span>        <span class="t-yes">✅ sobe ao GitHub</span>   <span class="t-note">← dependências do projeto</span>
+│
+└── <span class="t-key">.env</span>                <span class="t-no">❌ NUNCA sobe</span>       <span class="t-note">← sua chave real aqui</span>
+</pre>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="co-icon">💡</div>
+    <div class="co-body">
+      <div class="co-title">Por que o .gitignore funciona assim?</div>
+      <div class="co-text">O arquivo <code>.gitignore</code> contém a linha <code>.env</code> — isso diz ao Git para nunca rastrear, nunca incluir e nunca enviar esse arquivo. Mesmo que você rode <code>git add .</code> (que adiciona tudo), o <code>.env</code> é ignorado automaticamente.</div>
+    </div>
+  </div>
+
+  <div class="file-tree-card">
+    <div class="ftc-bar">
+      <div class="ftc-dot" style="background:#FF5F57"></div>
+      <div class="ftc-dot" style="background:#FEBC2E"></div>
+      <div class="ftc-dot" style="background:#28C840"></div>
+      <span class="ftc-title">.env — conteúdo (fica só no servidor)</span>
+    </div>
+    <div class="ftc-body">
+      <pre>
+<span class="t-note"># Este arquivo NUNCA vai ao GitHub</span>
+<span class="t-note"># Crie-o no servidor copiando o .env.example</span>
+
+<span class="t-key">ANTHROPIC_API_KEY</span>=<span class="t-val">sk-ant-SUA-CHAVE-AQUI</span>
+<span class="t-key">PORT</span>=<span class="t-val">3000</span>
+</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── SEÇÃO 3: COMO A CHAVE TRAFEGA ── -->
+<section class="section">
+  <div class="section-kicker">03 · Arquitetura segura</div>
+  <h2>O caminho dos dados — sem expor o segredo</h2>
+  <p class="section-lead">O navegador do usuário nunca vê a chave. Ela fica guardada no servidor e só é usada internamente para chamar a API.</p>
+
+  <div class="flow-diagram">
+
+    <div class="flow-node">
+      <div class="fn-icon">💻</div>
+      <div class="fn-body">
+        <div class="fn-label">Passo 1 — Usuário</div>
+        <div class="fn-title">Navegador (index.html)</div>
+        <div class="fn-desc">Envia os dados do jogo para o servidor. <strong>Sem nenhuma chave.</strong></div>
+      </div>
+    </div>
+
+    <div class="flow-connector">
+      <div class="fc-line"></div>
+      <div class="fc-badge safe">dados do jogo · sem chave</div>
+      <div class="fc-line"></div>
+      <div class="fc-arrow"></div>
+    </div>
+
+    <div class="flow-node secret-node">
+      <div class="fn-icon">🔐</div>
+      <div class="fn-body">
+        <div class="fn-label">Passo 2 — Servidor</div>
+        <div class="fn-title">Node.js · server/index.js</div>
+        <div class="fn-desc">Lê a chave do <code style="font-family:'DM Mono',monospace;font-size:12px;background:rgba(0,0,0,0.1);padding:1px 5px;border-radius:3px">.env</code> e adiciona ao pedido. A chave <strong>nunca sai daqui.</strong></div>
+      </div>
+    </div>
+
+    <div class="flow-connector">
+      <div class="fc-line"></div>
+      <div class="fc-badge secret">dados + chave (interno)</div>
+      <div class="fc-line"></div>
+      <div class="fc-arrow"></div>
+    </div>
+
+    <div class="flow-node highlighted">
+      <div class="fn-icon">🤖</div>
+      <div class="fn-body">
+        <div class="fn-label">Passo 3 — API</div>
+        <div class="fn-title">Anthropic · Claude Sonnet</div>
+        <div class="fn-desc">Recebe os dados, processa e devolve a análise tática completa.</div>
+      </div>
+    </div>
+
+    <div class="flow-connector">
+      <div class="fc-line"></div>
+      <div class="fc-badge safe">análise gerada (só texto)</div>
+      <div class="fc-line"></div>
+      <div class="fc-arrow"></div>
+    </div>
+
+    <div class="flow-node">
+      <div class="fn-icon">📰</div>
+      <div class="fn-body">
+        <div class="fn-label">Passo 4 — Resultado</div>
+        <div class="fn-title">Navegador recebe a análise</div>
+        <div class="fn-desc">O HTML editorial chega ao usuário. <strong>A chave nunca apareceu.</strong></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="pull-quote">
+    <p>"O navegador do visitante só vê o resultado — nunca o segredo que o produziu."</p>
+  </div>
+</section>
+
+<!-- ── SEÇÃO 4: PASSO A PASSO GITHUB ── -->
+<section class="section">
+  <div class="section-kicker">04 · Passo a passo</div>
+  <h2>Do computador ao GitHub ao servidor</h2>
+  <p class="section-lead">O fluxo completo de publicação — em ordem, sem pular etapas.</p>
+
+  <div class="steps">
+
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Criar repositório no GitHub</div>
+        <div class="step-desc">Acesse github.com, clique em "New repository", dê um nome (ex: <code style="font-family:'DM Mono',monospace;font-size:13px;background:#F2F0EC;padding:1px 6px;border-radius:4px">football-analyst</code>) e crie como público ou privado.</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Enviar o projeto (sem o .env)</div>
+        <div class="step-desc">No terminal, dentro da pasta do projeto:</div>
+        <div class="step-code">git init &amp;&amp; git add . &amp;&amp; git commit -m "primeiro commit" &amp;&amp; git push</div>
+        <div class="step-desc" style="margin-top:8px">O <code style="font-family:'DM Mono',monospace;font-size:13px;background:#F2F0EC;padding:1px 6px;border-radius:4px">.gitignore</code> garante que o <code style="font-family:'DM Mono',monospace;font-size:13px;background:#F2F0EC;padding:1px 6px;border-radius:4px">.env</code> fique de fora automaticamente.</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">No servidor: clonar o repositório</div>
+        <div class="step-desc">No seu VPS ou serviço de hosting:</div>
+        <div class="step-code">git clone https://github.com/seu-usuario/football-analyst</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Criar o .env no servidor (só aqui)</div>
+        <div class="step-desc">Copie o template e preencha com sua chave real:</div>
+        <div class="step-code">cp .env.example .env &nbsp;&nbsp;# depois edite com sua chave</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Instalar dependências e iniciar</div>
+        <div class="step-code">npm install &amp;&amp; npm start</div>
+        <div class="step-desc" style="margin-top:8px">Pronto. O app está rodando e a chave está protegida.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout success" style="margin-top:32px">
+    <div class="co-icon">✅</div>
+    <div class="co-body">
+      <div class="co-title">Regra de ouro</div>
+      <div class="co-text">O arquivo <code>.env</code> <strong>só existe no servidor</strong>. Nunca no GitHub, nunca no seu computador pessoal de forma permanente, nunca em e-mail ou mensagem. Se precisar passar a chave para alguém, use um gerenciador de senhas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SEÇÃO 5: RESUMO ── -->
+<section class="section">
+  <div class="section-kicker">05 · Resumo</div>
+  <h2>O que você precisa lembrar</h2>
+
+  <div class="summary-grid">
+    <div class="sum-card">
+      <div class="sc-icon">📁</div>
+      <div class="sc-label">Sobe ao GitHub</div>
+      <div class="sc-value">Tudo exceto o <code style="font-family:'DM Mono',monospace;font-size:14px">.env</code></div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-icon">🔐</div>
+      <div class="sc-label">Fica só no servidor</div>
+      <div class="sc-value">O arquivo <code style="font-family:'DM Mono',monospace;font-size:14px">.env</code> com a chave real</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-icon">🛡️</div>
+      <div class="sc-label">Quem protege</div>
+      <div class="sc-value">O <code style="font-family:'DM Mono',monospace;font-size:14px">.gitignore</code> bloqueia automaticamente</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-icon">👁️</div>
+      <div class="sc-label">O visitante vê</div>
+      <div class="sc-value">Só o resultado — nunca a chave</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-icon">🤖</div>
+      <div class="sc-label">A IA usada</div>
+      <div class="sc-value">Claude Sonnet via API Anthropic</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-icon">💰</div>
+      <div class="sc-label">Custo por análise</div>
+      <div class="sc-value">~US$ 0,02–0,05 por partida</div>
+    </div>
+  </div>
+</section>
+</div><!-- /container -->
+
+<footer>
+  Infográfico elaborado para <strong>Aula de Inteligência Artificial · Jornalismo Esportivo</strong> · Maio de 2026
+</footer>
+
+</body>
+</html>
