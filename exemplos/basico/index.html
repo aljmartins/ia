@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Do Prompt ao Deploy — Criando um App de IA com Python</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F6F2;
+      --white: #FFFFFF;
+      --dark: #1A1A2E;
+      --mid: #3D3D5C;
+      --muted: #7A7A9A;
+      --border: #E2E1DB;
+
+      --c1: #5B4FCF;   /* roxo — Claude / IA */
+      --c1-light: #EDE9FF;
+      --c2: #1E7A6E;   /* verde — VS Code */
+      --c2-light: #E6F4F2;
+      --c3: #C25B3A;   /* terracota — GitHub */
+      --c3-light: #FAEEE9;
+      --c4: #2563A8;   /* azul — HuggingFace / Streamlit */
+      --c4-light: #E8F0FB;
+      --c5: #B05C00;   /* âmbar — Streamlit Cloud */
+      --c5-light: #FEF3E2;
+
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(26,26,46,0.08);
+      --shadow-lg: 0 8px 40px rgba(26,26,46,0.13);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────────── */
+    .page-header {
+      background: var(--dark);
+      color: white;
+      padding: 64px 48px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 80% 50%, rgba(91,79,207,0.35) 0%, transparent 65%),
+                  radial-gradient(ellipse at 10% 80%, rgba(37,99,168,0.2) 0%, transparent 55%);
+    }
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .header-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 20px;
+    }
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+    }
+    .page-header h1 span { color: #A78BFA; }
+    .header-desc {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .header-pills {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .pill {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* ── FLOW OVERVIEW ──────────────────────────────────────────── */
+    .flow-section {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 48px;
+    }
+    .flow-inner { max-width: 900px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .flow-track {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .flow-node {
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+      position: relative;
+    }
+    .flow-node-circle {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      margin: 0 auto 10px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+    }
+    .flow-node-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--mid);
+      line-height: 1.3;
+    }
+    .flow-node-sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .flow-arrow {
+      font-size: 1.2rem;
+      color: var(--border);
+      padding: 0 4px;
+      flex-shrink: 0;
+      margin-bottom: 30px;
+    }
+    .fn-1 .flow-node-circle { background: var(--c1-light); color: var(--c1); }
+    .fn-2 .flow-node-circle { background: var(--c1-light); color: var(--c1); }
+    .fn-3 .flow-node-circle { background: var(--c2-light); color: var(--c2); }
+    .fn-4 .flow-node-circle { background: var(--c3-light); color: var(--c3); }
+    .fn-5 .flow-node-circle { background: var(--c4-light); color: var(--c4); }
+    .fn-6 .flow-node-circle { background: var(--c5-light); color: var(--c5); }
+
+    /* ── MAIN CONTENT ───────────────────────────────────────────── */
+    .main { max-width: 900px; margin: 0 auto; padding: 56px 48px; }
+
+    /* ── STEP CARD ──────────────────────────────────────────────── */
+    .step-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 40px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-number {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .step-title-block {}
+    .step-tool {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .step-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--dark);
+    }
+    .step-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .step-text { padding: 28px 32px; }
+    .step-text p {
+      font-size: 0.93rem;
+      color: var(--mid);
+      line-height: 1.75;
+      margin-bottom: 16px;
+    }
+    .step-text p:last-child { margin-bottom: 0; }
+    .step-visual {
+      border-left: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      min-height: 200px;
+    }
+
+    /* ── CODE BLOCK ─────────────────────────────────────────────── */
+    .code-block {
+      background: #1A1A2E;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin: 12px 0;
+      width: 100%;
+    }
+    .code-block pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #A78BFA;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .code-block pre .kw  { color: #67E8F9; }
+    .code-block pre .str { color: #86EFAC; }
+    .code-block pre .cm  { color: #6B7280; }
+    .code-block pre .fn  { color: #FCA5A5; }
+    .code-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4B5563;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── CALLOUT ────────────────────────────────────────────────── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.86rem;
+      line-height: 1.6;
+      margin: 12px 0;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+    .callout.tip  { background: var(--c1-light); color: var(--c1); }
+    .callout.warn { background: var(--c5-light); color: var(--c5); }
+    .callout.info { background: var(--c2-light); color: var(--c2); }
+    .callout.note { background: var(--c4-light); color: var(--c4); }
+
+    /* ── STEPS LIST ─────────────────────────────────────────────── */
+    .steps-list {
+      list-style: none;
+      padding: 0;
+    }
+    .steps-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 8px 0;
+      font-size: 0.88rem;
+      color: var(--mid);
+      border-bottom: 1px solid var(--border);
+    }
+    .steps-list li:last-child { border-bottom: none; }
+    .steps-list li .n {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      background: var(--c1-light);
+      color: var(--c1);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── PLACEHOLDER ────────────────────────────────────────────── */
+    .img-placeholder {
+      width: 100%;
+      border: 2px dashed #CBD5E1;
+      border-radius: 10px;
+      background: #F8FAFC;
+      padding: 32px 20px;
+      text-align: center;
+      color: #94A3B8;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .img-placeholder .ph-icon { font-size: 2rem; }
+    .img-placeholder .ph-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      background: #E2E8F0;
+      color: #475569;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .img-placeholder .ph-desc {
+      font-size: 0.77rem;
+      color: #B0BAC5;
+      font-style: italic;
+      max-width: 260px;
+    }
+    figure { margin: 0; width: 100%; }
+    figcaption {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* ── COLOR HELPERS ──────────────────────────────────────────── */
+    .c1 { color: var(--c1); }
+    .c2 { color: var(--c2); }
+    .c3 { color: var(--c3); }
+    .c4 { color: var(--c4); }
+    .c5 { color: var(--c5); }
+
+    .sn-1 { background: var(--c1-light); color: var(--c1); }
+    .sn-2 { background: var(--c1-light); color: var(--c1); }
+    .sn-3 { background: var(--c2-light); color: var(--c2); }
+    .sn-4 { background: var(--c3-light); color: var(--c3); }
+    .sn-5 { background: var(--c4-light); color: var(--c4); }
+    .sn-6 { background: var(--c5-light); color: var(--c5); }
+
+    .st-1 { color: var(--c1); }
+    .st-2 { color: var(--c1); }
+    .st-3 { color: var(--c2); }
+    .st-4 { color: var(--c3); }
+    .st-5 { color: var(--c4); }
+    .st-6 { color: var(--c5); }
+
+    /* ── ARCH DIAGRAM ───────────────────────────────────────────── */
+    .arch-box {
+      width: 100%;
+      background: #1A1A2E;
+      border-radius: 10px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+    .arch-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+    }
+    .arch-node {
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .arch-arrow { color: #4B5563; font-size: 0.9rem; }
+
+    /* ── RESULT SECTION ─────────────────────────────────────────── */
+    .result-section {
+      background: linear-gradient(135deg, var(--dark), #2D1B69);
+      border-radius: var(--radius);
+      padding: 40px;
+      margin-bottom: 40px;
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 70% 30%, rgba(167,139,250,0.2) 0%, transparent 60%);
+    }
+    .result-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .result-section p {
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .result-url {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      padding: 10px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: #A78BFA;
+      display: inline-block;
+      position: relative;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 32px 48px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 680px) {
+      .page-header { padding: 40px 24px; }
+      .flow-section { padding: 32px 24px; }
+      .main { padding: 32px 24px; }
+      .step-body { grid-template-columns: 1fr; }
+      .step-visual { border-left: none; border-top: 1px solid var(--border); }
+      .step-header { padding: 20px 24px; }
+      .step-text { padding: 20px 24px; }
+      .flow-node-label { font-size: 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+<header class="page-header">
+  <div class="header-inner">
+    <div class="header-tag">Aula de Inteligência Artificial Aplicada</div>
+    <h1>Do <span>Prompt</span> ao Deploy<br>em 6 passos</h1>
+    <p class="header-desc">Como criar um aplicativo de análise de sentimentos com IA — desde a geração do código via Claude até o deploy gratuito na nuvem.</p>
+    <div class="header-pills">
+      <span class="pill">🤖 Claude AI</span>
+      <span class="pill">🐍 Python</span>
+      <span class="pill">📊 Streamlit</span>
+      <span class="pill">🐙 GitHub</span>
+      <span class="pill">🤗 HuggingFace</span>
+      <span class="pill">☁️ Deploy gratuito</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ FLOW OVERVIEW ════════════════════════════════════════════════════════ -->
+<section class="flow-section">
+  <div class="flow-inner">
+    <div class="section-label">Visão geral do fluxo</div>
+    <div class="flow-track">
+      <div class="flow-node fn-1">
+        <div class="flow-node-circle">💬</div>
+        <div class="flow-node-label">Prompt</div>
+        <div class="flow-node-sub">Instrução em linguagem natural</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node fn-2">
+        <div class="flow-node-circle">🤖</div>
+        <div class="flow-node-label">Claude gera código</div>
+        <div class="flow-node-sub">app.py pronto</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node fn-3">
+        <div class="flow-node-circle">💻</div>
+        <div class="flow-node-label">VS Code</div>
+        <div class="flow-node-sub">testa localmente</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node fn-4">
+        <div class="flow-node-circle">🐙</div>
+        <div class="flow-node-label">GitHub</div>
+        <div class="flow-node-sub">repositório público</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node fn-5">
+        <div class="flow-node-circle">🤗</div>
+        <div class="flow-node-label">HuggingFace</div>
+        <div class="flow-node-sub">token + modelo</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node fn-6">
+        <div class="flow-node-circle">🚀</div>
+        <div class="flow-node-label">Deploy</div>
+        <div class="flow-node-sub">Streamlit Cloud</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STEPS ════════════════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── PASSO 1 ─────────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number sn-1">01</div>
+      <div class="step-title-block">
+        <div class="step-tool st-1">Claude AI · claude.ai</div>
+        <div class="step-title">Escreva o prompt para gerar o app</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>Tudo começa com uma <strong>instrução em linguagem natural</strong> para a IA. Não é necessário saber programar para dar o primeiro passo — você descreve o que quer e a IA entende.</p>
+        <p>Um bom prompt especifica: o tipo de aplicativo, a tecnologia desejada, a função principal e o formato de saída esperado.</p>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <span>Quanto mais específico o prompt, mais preciso e útil será o código gerado.</span>
+        </div>
+        <div class="code-block">
+          <div class="code-label">prompt de exemplo</div>
+          <pre><span class="str">"Crie um app Python com Streamlit
+que classifique sentimentos em
+positivo, negativo ou neutro.
+Use a API do HuggingFace.
+Gere app.py e requirements.txt."</span></pre>
+        </div>
+      </div>
+      <div class="step-visual">
+        <figure>
+          <img src="img/01-claude-prompt.png" alt="Print da interface do Claude com o prompt digitado e a resposta com o código gerado"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               style="width:100%;border-radius:10px;display:block;">
+          <div class="img-placeholder" style="display:none;">
+            <span class="ph-icon">🖼</span>
+            <span class="ph-path">img/01-claude-prompt.png</span>
+            <span class="ph-desc">Print da interface do Claude com o prompt digitado e a resposta com o código gerado</span>
+          </div>
+          <figcaption>Fig. 1 — Interface do Claude com o prompt e código gerado</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PASSO 2 ─────────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number sn-2">02</div>
+      <div class="step-title-block">
+        <div class="step-tool st-2">Claude AI · Código gerado</div>
+        <div class="step-title">Copie o código e crie os arquivos</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>A IA entrega o código completo. Você copia e salva em dois arquivos na sua pasta de projeto:</p>
+        <ul class="steps-list">
+          <li><span class="n">1</span> Crie a pasta do projeto: <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">aplica/</code></li>
+          <li><span class="n">2</span> Salve o código Python como <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">app.py</code></li>
+          <li><span class="n">3</span> Salve as dependências como <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">requirements.txt</code></li>
+        </ul>
+        <div class="code-block" style="margin-top:14px;">
+          <div class="code-label">requirements.txt</div>
+          <pre><span class="str">streamlit</span><span class="cm">>=1.32.0</span>
+<span class="str">requests</span><span class="cm">>=2.31.0</span></pre>
+        </div>
+        <div class="callout info" style="margin-top:10px;">
+          <span class="callout-icon">ℹ️</span>
+          <span>Só 2 linhas no requirements.txt! O modelo roda nos servidores do HuggingFace — sem instalar torch ou transformers.</span>
+        </div>
+      </div>
+      <div class="step-visual">
+        <figure>
+          <img src="img/02-arquivos-projeto.png" alt="Print do explorador de arquivos mostrando a pasta com app.py e requirements.txt"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               style="width:100%;border-radius:10px;display:block;">
+          <div class="img-placeholder" style="display:none;">
+            <span class="ph-icon">🖼</span>
+            <span class="ph-path">img/02-arquivos-projeto.png</span>
+            <span class="ph-desc">Print do explorador de arquivos mostrando a pasta com app.py e requirements.txt</span>
+          </div>
+          <figcaption>Fig. 2 — Estrutura de arquivos do projeto</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PASSO 3 ─────────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number sn-3">03</div>
+      <div class="step-title-block">
+        <div class="step-tool st-3">Visual Studio Code · Terminal</div>
+        <div class="step-title">Teste o app localmente</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>Abra a pasta no <strong>VS Code</strong> e execute os comandos no terminal integrado (<code style="font-family:monospace;font-size:0.82rem">Ctrl + `</code>):</p>
+        <div class="code-block">
+          <div class="code-label">terminal — PowerShell / bash</div>
+          <pre><span class="cm"># 1. Cria ambiente virtual</span>
+<span class="kw">python</span> -m venv venv
+
+<span class="cm"># 2. Ativa o ambiente</span>
+<span class="kw">venv\Scripts\activate</span>   <span class="cm"># Windows</span>
+<span class="kw">source venv/bin/activate</span> <span class="cm"># Mac/Linux</span>
+
+<span class="cm"># 3. Instala dependências</span>
+<span class="kw">pip</span> install -r requirements.txt
+
+<span class="cm"># 4. Roda o app</span>
+<span class="kw">streamlit</span> run app.py</pre>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Se a porta 8501 estiver ocupada: <code style="font-family:monospace">streamlit run app.py --server.port 8502</code></span>
+        </div>
+      </div>
+      <div class="step-visual">
+        <figure>
+          <img src="img/03-vscode-terminal.png" alt="Print do VS Code com o terminal mostrando o comando streamlit run e o app aberto no browser em localhost:8501"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               style="width:100%;border-radius:10px;display:block;">
+          <div class="img-placeholder" style="display:none;">
+            <span class="ph-icon">🖼</span>
+            <span class="ph-path">img/03-vscode-terminal.png</span>
+            <span class="ph-desc">Print do VS Code com o terminal mostrando o comando streamlit run e o app aberto no browser em localhost:8501</span>
+          </div>
+          <figcaption>Fig. 3 — VS Code com terminal e app rodando em localhost</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PASSO 4 ─────────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number sn-4">04</div>
+      <div class="step-title-block">
+        <div class="step-tool st-4">GitHub · github.com</div>
+        <div class="step-title">Suba o código para o GitHub</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>O GitHub é o repositório remoto que guarda seu código e conecta ao serviço de deploy. Você pode subir os arquivos diretamente pela interface web — sem precisar do Git instalado.</p>
+        <ul class="steps-list">
+          <li><span class="n">1</span> Acesse <strong>github.com</strong> e entre na sua conta</li>
+          <li><span class="n">2</span> Abra o repositório (ex: <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">ai1a</code>)</li>
+          <li><span class="n">3</span> Clique em <strong>Add file → Upload files</strong></li>
+          <li><span class="n">4</span> Arraste <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">app.py</code> e <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">requirements.txt</code></li>
+          <li><span class="n">5</span> Clique em <strong>Commit changes</strong></li>
+        </ul>
+        <div class="callout note" style="margin-top:12px;">
+          <span class="callout-icon">📌</span>
+          <span>Se o repositório estiver vazio, procure o link <em>"uploading an existing file"</em> na página inicial do repo.</span>
+        </div>
+      </div>
+      <div class="step-visual">
+        <figure>
+          <img src="img/04-github-upload.png" alt="Print do GitHub mostrando o botão Add file → Upload files e os arquivos sendo enviados"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               style="width:100%;border-radius:10px;display:block;">
+          <div class="img-placeholder" style="display:none;">
+            <span class="ph-icon">🖼</span>
+            <span class="ph-path">img/04-github-upload.png</span>
+            <span class="ph-desc">Print do GitHub mostrando o botão Add file → Upload files e os arquivos sendo enviados</span>
+          </div>
+          <figcaption>Fig. 4 — Upload de arquivos no GitHub via interface web</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PASSO 5 ─────────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number sn-5">05</div>
+      <div class="step-title-block">
+        <div class="step-tool st-5">HuggingFace · huggingface.co</div>
+        <div class="step-title">Gere o token de acesso ao modelo</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>O app usa o modelo <strong>XLM-RoBERTa</strong> multilíngue do HuggingFace — funciona em português, inglês e espanhol. Para chamá-lo via API, você precisa de um token gratuito.</p>
+        <ul class="steps-list">
+          <li><span class="n">1</span> Acesse <strong>huggingface.co</strong> e crie uma conta gratuita</li>
+          <li><span class="n">2</span> Clique na foto → <strong>Settings</strong></li>
+          <li><span class="n">3</span> Menu esquerdo: <strong>Access Tokens</strong></li>
+          <li><span class="n">4</span> Clique em <strong>New token</strong> → tipo <strong>Fine-grained</strong></li>
+          <li><span class="n">5</span> Marque <strong>"Make calls to Inference Providers"</strong></li>
+          <li><span class="n">6</span> Copie o token (começa com <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">hf_...</code>)</li>
+        </ul>
+        <div class="callout tip" style="margin-top:12px;">
+          <span class="callout-icon">💡</span>
+          <span>Não precisa criar repositório no HuggingFace — apenas a conta e o token são necessários.</span>
+        </div>
+      </div>
+      <div class="step-visual">
+        <figure>
+          <img src="img/05-huggingface-token.png" alt="Print do HuggingFace Settings → Access Tokens mostrando a criação do token Fine-grained"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               style="width:100%;border-radius:10px;display:block;">
+          <div class="img-placeholder" style="display:none;">
+            <span class="ph-icon">🖼</span>
+            <span class="ph-path">img/05-huggingface-token.png</span>
+            <span class="ph-desc">Print do HuggingFace Settings → Access Tokens mostrando a criação do token Fine-grained</span>
+          </div>
+          <figcaption>Fig. 5 — Geração do token no HuggingFace</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PASSO 6 ─────────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number sn-6">06</div>
+      <div class="step-title-block">
+        <div class="step-tool st-6">Streamlit Cloud · share.streamlit.io</div>
+        <div class="step-title">Deploy — coloque o app online</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>O <strong>Streamlit Community Cloud</strong> é gratuito, conecta direto no GitHub e publica o app em minutos — sem servidor, sem cartão de crédito.</p>
+        <ul class="steps-list">
+          <li><span class="n">1</span> Acesse <strong>share.streamlit.io</strong></li>
+          <li><span class="n">2</span> Clique em <strong>New app</strong></li>
+          <li><span class="n">3</span> Selecione o repositório GitHub e o arquivo <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">app.py</code></li>
+          <li><span class="n">4</span> Clique em <strong>Deploy!</strong></li>
+          <li><span class="n">5</span> Quando o app abrir, cole o token <code style="font-family:monospace;font-size:0.82rem;background:#F1F0EC;padding:2px 6px;border-radius:4px;">hf_...</code> no campo</li>
+        </ul>
+        <div class="callout info" style="margin-top:12px;">
+          <span class="callout-icon">🔄</span>
+          <span>A cada <em>push</em> no GitHub o app é atualizado automaticamente no Streamlit Cloud.</span>
+        </div>
+      </div>
+      <div class="step-visual">
+        <figure>
+          <img src="img/06-streamlit-deploy.png" alt="Print do Streamlit Cloud mostrando o painel de deploy com o repositório selecionado e o botão Deploy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+               style="width:100%;border-radius:10px;display:block;">
+          <div class="img-placeholder" style="display:none;">
+            <span class="ph-icon">🖼</span>
+            <span class="ph-path">img/06-streamlit-deploy.png</span>
+            <span class="ph-desc">Print do Streamlit Cloud mostrando o painel de deploy com o repositório selecionado e o botão Deploy</span>
+          </div>
+          <figcaption>Fig. 6 — Deploy no Streamlit Community Cloud</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ARQUITETURA ──────────────────────────────────────────────────────── -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-number" style="background:#F1F0EC;color:#3D3D5C;">⚙️</div>
+      <div class="step-title-block">
+        <div class="step-tool" style="color:var(--muted);">Conceito técnico</div>
+        <div class="step-title">Como o app funciona por dentro</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-text">
+        <p>O app não carrega nenhum modelo de IA localmente — isso consumiria ~2GB de memória RAM. Em vez disso, ele <strong>chama a API do HuggingFace</strong> e recebe o resultado pronto.</p>
+        <p>O modelo usado é o <strong>XLM-RoBERTa</strong>, uma rede neural Transformer treinada em 8 idiomas incluindo o português. Diferente do VADER (dicionário inglês), ele compreende o contexto real das frases.</p>
+        <div class="callout tip">
+          <span class="callout-icon">🧠</span>
+          <span><strong>VADER</strong> → dicionário de palavras inglesas, rápido, sem GPU, não funciona em PT<br>
+          <strong>XLM-RoBERTa</strong> → rede neural profunda, multilíngue, muito mais preciso</span>
+        </div>
+      </div>
+      <div class="step-visual">
+        <div class="arch-box">
+          <div class="arch-row">
+            <div class="arch-node" style="background:#1E3A5F;color:#60A5FA;">👤 Usuário</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓ digita texto</span></div>
+          <div class="arch-row">
+            <div class="arch-node" style="background:#2D1B69;color:#A78BFA;">🌐 Streamlit Cloud<br><span style="font-size:0.65rem;opacity:0.7;">app.py</span></div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓ POST /models/xlm-roberta</span></div>
+          <div class="arch-row">
+            <div class="arch-node" style="background:#1A3A2E;color:#34D399;">🤗 HuggingFace API<br><span style="font-size:0.65rem;opacity:0.7;">Inference Providers</span></div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">↓ {Positive: 0.92, ...}</span></div>
+          <div class="arch-row">
+            <div class="arch-node" style="background:#2D1B69;color:#A78BFA;">😊 Resultado na tela</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESULTADO FINAL ──────────────────────────────────────────────────── -->
+  <div class="result-section">
+    <h2>🎉 App online e funcional</h2>
+    <p>Qualquer pessoa com o link pode acessar pelo celular ou computador — sem instalar nada.</p>
+    <div class="result-url">https://seu-usuario-app-xxxx.streamlit.app</div>
+    <div style="margin-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;position:relative;">
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:16px 24px;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:4px;">⚡</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Deploy em<br><strong style="color:white;">~3 minutos</strong></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:16px 24px;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:4px;">💰</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Custo<br><strong style="color:white;">R$ 0,00</strong></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:16px 24px;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:4px;">🌐</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Funciona em<br><strong style="color:white;">PT · EN · ES</strong></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:16px 24px;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:4px;">🔄</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);">Atualiza com<br><strong style="color:white;">cada push</strong></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════════════════ -->
+<footer>
+  Infográfico elaborado para a Aula de Inteligência Artificial Aplicada · Python · Streamlit · HuggingFace · Maio de 2026
+</footer>
+
+</body>
+</html>
