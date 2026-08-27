@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Representação do Conhecimento e Sistemas Baseados em Regras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FAFAF8;
+    --bg-alt: #F1F3F5;
+    --paper: #FFFFFF;
+    --ink: #1B2430;
+    --ink-soft: #4A5568;
+    --blue: #2D5F8A;
+    --blue-deep: #1E3F5C;
+    --blue-pale: #E7F0F7;
+    --amber: #C9862E;
+    --amber-pale: #FBF0DE;
+    --green: #3D6B4F;
+    --green-pale: #E7F1EA;
+    --plum: #6B4C7A;
+    --plum-pale: #F0E9F3;
+    --line: #DDE3E8;
+    --shadow: 0 8px 30px rgba(30,63,92,0.08);
+    --radius: 14px;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0; background: var(--bg); color: var(--ink);
+    font-family: 'Source Sans 3', sans-serif; font-size: 17px; line-height: 1.65;
+  }
+  h1,h2,h3,h4{ font-family: 'Source Serif 4', serif; color: var(--blue-deep); line-height: 1.2; margin: 0 0 0.5em 0; }
+  p{ margin: 0 0 1em 0; }
+  a{ color: var(--blue); }
+  code, .mono{ font-family: 'JetBrains Mono', monospace; }
+
+  header.institutional-header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 14px 5vw; background: var(--paper); border-bottom: 1px solid var(--line);
+    position: sticky; top:0; z-index: 50;
+  }
+  .header-identity{ font-family:'Source Serif 4', serif; font-weight:600; color: var(--blue-deep); font-size: 0.95rem; }
+  .header-identity span{ display:block; font-family:'Source Sans 3',sans-serif; font-weight:400; font-size: 0.72rem; color: var(--ink-soft); margin-top:2px; }
+  header.institutional-header img{ max-height:46px; }
+
+  nav.toc{
+    display:flex; flex-wrap:wrap; gap: 6px 10px; padding: 10px 5vw;
+    background: var(--bg-alt); border-bottom: 1px solid var(--line); font-size: 0.82rem;
+    position: sticky; top: 74px; z-index: 40;
+  }
+  nav.toc a{ text-decoration:none; color: var(--blue-deep); background: var(--paper); border: 1px solid var(--line);
+    padding: 5px 12px; border-radius: 999px; white-space: nowrap; transition: all .15s ease; }
+  nav.toc a:hover{ background: var(--blue); color:#fff; border-color: var(--blue); }
+
+  .hero{ padding: 70px 5vw 60px; max-width: 900px; margin: 0 auto; }
+  .kicker{ text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem; color: var(--amber); font-weight:700; margin-bottom: 14px; }
+  .hero h1{ font-size: clamp(2rem, 4.2vw, 3rem); }
+  .hero .sub{ font-size: 1.2rem; color: var(--ink-soft); max-width: 660px; }
+  .hero-meta{ margin-top: 28px; display:flex; gap: 22px; flex-wrap:wrap; font-size: 0.85rem; color: var(--ink-soft); }
+  .hero-meta strong{ color: var(--ink); }
+
+  main{ max-width: 900px; margin: 0 auto; padding: 0 5vw 40px; }
+  section{ padding: 46px 0; border-top: 1px solid var(--line); }
+  section:first-of-type{ border-top:none; }
+  section h2{ font-size: 1.8rem; margin-bottom: 0.7em; }
+  section h2 .num{ display:inline-block; font-family:'Source Sans 3',sans-serif; font-weight:700; font-size: 0.6em; color: var(--amber); margin-right: 10px; vertical-align: 2px; }
+  section h3{ font-size: 1.2rem; margin-top: 1.6em; }
+
+  .lead-text{ font-size: 1.13rem; color: var(--ink-soft); }
+
+  .callout{ background: var(--blue-pale); border-left: 4px solid var(--blue); padding: 18px 22px; border-radius: 8px; margin: 22px 0; }
+  .callout.amber{ background: var(--amber-pale); border-color: var(--amber); }
+  .callout.green{ background: var(--green-pale); border-color: var(--green); }
+  .callout.plum{ background: var(--plum-pale); border-color: var(--plum); }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout strong{ display:block; margin-bottom:4px; color: var(--blue-deep); font-family:'Source Serif 4',serif; }
+
+  blockquote.pullquote{ font-family: 'Source Serif 4', serif; font-size: 1.45rem; font-style:italic; color: var(--blue-deep);
+    border-left: 3px solid var(--amber); padding-left: 20px; margin: 30px 0; line-height:1.4; }
+
+  .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 24px 0; }
+  .grid-3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 26px 0; }
+  @media (max-width: 720px){ .grid-2, .grid-3{ grid-template-columns: 1fr; } }
+
+  .card{ background: var(--paper); border:1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); }
+  .card h4{ font-size:1.05rem; margin-bottom:8px; color: var(--blue-deep); }
+  .card p{ font-size: 0.95rem; color: var(--ink-soft); margin:0; }
+  .card .tag{ display:inline-block; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; padding:3px 10px; border-radius:999px; margin-bottom:10px; }
+  .tag.logica{ background: var(--blue-pale); color: var(--blue-deep); }
+  .tag.arvore{ background: var(--green-pale); color: var(--green); }
+  .tag.especialista{ background: var(--amber-pale); color:#8a5a17; }
+
+  figure{ margin: 26px 0; }
+  figure img{ width:100%; display:block; border-radius: 10px; border:1px solid var(--line); background:#fff; }
+  figcaption{ font-size: 0.82rem; color: var(--ink-soft); margin-top:8px; line-height:1.4; }
+  figcaption .src{ display:block; font-size: 0.75rem; margin-top:2px; color:#8a94a3; }
+
+  .diagram-box{ background: var(--paper); border:1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+  .diagram-box svg{ width:100%; height:auto; display:block; }
+  .diagram-caption{ font-size:0.85rem; color: var(--ink-soft); margin-top:10px; }
+
+  table.compare{ width:100%; border-collapse: collapse; margin: 20px 0; font-size: 0.88rem; background: var(--paper);
+    border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); }
+  table.compare th, table.compare td{ padding: 11px 14px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.compare th{ background: var(--blue-deep); color:#fff; font-family:'Source Serif 4',serif; font-weight:600; }
+  table.compare tr:last-child td{ border-bottom:none; }
+  table.compare tr:nth-child(even) td{ background: var(--bg-alt); }
+
+  .rule-box{ font-family:'JetBrains Mono', monospace; background: var(--blue-deep); color:#F5F8FA; padding: 18px 24px;
+    border-radius: 10px; font-size: 1.02rem; margin: 18px 0; line-height: 1.9; }
+  .rule-box .cond{ color:#8FD0FF; } .rule-box .then{ color:#FFCB7A; }
+  .rule-box small{ display:block; font-family:'Source Sans 3',sans-serif; font-size:0.68rem; color:#B9CBD9; margin-top:10px; letter-spacing:0.03em; text-transform:uppercase; }
+
+  .app-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 26px 0; }
+  @media (max-width: 860px){ .app-grid{ grid-template-columns: 1fr; } }
+  .app-card{ background: var(--paper); border:1px solid var(--line); border-radius: var(--radius); padding: 22px;
+    box-shadow: var(--shadow); display:flex; flex-direction:column; gap:10px; }
+  .app-card .icon{ font-size: 1.8rem; }
+  .app-card h4{ margin:0; font-size:1.05rem; }
+  .app-card p{ font-size:0.92rem; color: var(--ink-soft); margin:0; }
+  .app-card ul{ font-size:0.88rem; color: var(--ink-soft); padding-left: 18px; margin:0; }
+
+  .decision-box{ background: var(--green-pale); border-radius: var(--radius); padding: 26px 28px; border: 1px solid #cfe3d5; margin: 22px 0; }
+  .decision-box h4{ color: var(--green); margin-bottom: 14px; }
+  .decision-box ol{ padding-left: 20px; margin:0; }
+  .decision-box li{ margin-bottom: 10px; }
+
+  .synthesis{ background: var(--blue-deep); color: #EFF4F8; border-radius: 18px; padding: 40px 36px; margin-top: 10px; }
+  .synthesis h2{ color:#fff; }
+  .synthesis .lead-text{ color:#C8D8E4; }
+  .synthesis ul{ padding-left: 20px; }
+  .synthesis li{ margin-bottom: 8px; }
+
+  .resource-list{ list-style:none; padding:0; margin: 18px 0; display:flex; flex-direction:column; gap:12px; }
+  .resource-list li{ background: var(--paper); border:1px solid var(--line); border-radius:10px; padding: 14px 18px; display:flex; align-items:center; gap:14px; }
+  .resource-list .dot{ width:8px; height:8px; border-radius:50%; background: var(--amber); flex-shrink:0; }
+
+  footer.institutional-footer{ background: var(--bg-alt); border-top: 1px solid var(--line); text-align:center; padding: 30px 5vw; margin-top: 40px; }
+  footer.institutional-footer p{ font-size: 0.8rem; color: #6b7688; margin:0; letter-spacing: 0.01em; }
+</style>
+</head>
+<body>
+
+<header class="institutional-header">
+  <div class="header-identity">
+    Princípios de Inteligência Artificial Aplicados
+    <span>UFPel · 15001103 · Material de aula</span>
+  </div>
+  <img src="img/ufpel-logo.png" alt="Logo da Universidade Federal de Pelotas (UFPel)">
+</header>
+
+<nav class="toc">
+  <a href="#intro">Introdução</a>
+  <a href="#logica">Lógica</a>
+  <a href="#arvores">Árvores de decisão</a>
+  <a href="#especialistas">Sistemas especialistas</a>
+  <a href="#aplicacoes">Aplicações práticas</a>
+  <a href="#escolher">Como escolher</a>
+  <a href="#recursos">Recursos</a>
+</nav>
+
+<div class="hero">
+  <div class="kicker">Aula · Representação do conhecimento e sistemas baseados em regras</div>
+  <h1>Como ensinar uma máquina a "saber" e a decidir?</h1>
+  <p class="sub">Lógica, árvores de decisão e sistemas especialistas — as ferramentas mais antigas (e ainda muito usadas) da Inteligência Artificial para representar conhecimento humano e raciocinar a partir dele.</p>
+  <div class="hero-meta">
+    <div><strong>Disciplina:</strong> Princípios de Inteligência Artificial Aplicados</div>
+    <div><strong>Público:</strong> turma multidisciplinar</div>
+    <div><strong>Paradigma:</strong> Simbólico (IA clássica)</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- 1. INTRODUÇÃO -->
+  <section id="intro">
+    <h2><span class="num">01</span>Antes do aprendizado de máquina, havia regras</h2>
+    <p class="lead-text">Muito antes de redes neurais e Deep Learning, a Inteligência Artificial já tomava decisões — só que de um jeito diferente: em vez de <em>aprender</em> padrões a partir de milhares de exemplos, ela <em>recebia</em> o conhecimento de um especialista humano, já pronto, organizado em regras e estruturas lógicas.</p>
+
+    <blockquote class="pullquote">Representar conhecimento é traduzir o que um especialista sabe para uma linguagem que a máquina consiga usar para raciocinar.</blockquote>
+
+    <p>Essa abordagem é chamada de <strong>paradigma simbólico</strong>: o conhecimento é representado por símbolos (palavras, regras, categorias) — não por números e pesos, como nas redes neurais. Para isso funcionar, é preciso resolver três problemas:</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <span class="tag logica">1</span>
+        <h4>Identificar o conhecimento</h4>
+        <p>Entender e modelar o problema: quais fatos, regras e critérios um especialista humano realmente usa para decidir?</p>
+      </div>
+      <div class="card">
+        <span class="tag arvore">2</span>
+        <h4>Representar formalmente</h4>
+        <p>Escolher uma linguagem — lógica, regras SE-ENTÃO, árvore de decisão — para escrever esse conhecimento de forma que o computador entenda.</p>
+      </div>
+      <div class="card">
+        <span class="tag especialista">3</span>
+        <h4>Implementar a inferência</h4>
+        <p>Construir o mecanismo que usa esse conhecimento representado para tirar conclusões e tomar decisões novas.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Por que isso ainda importa</strong>
+      <p>Diferente de uma rede neural, um sistema baseado em regras é <strong>transparente</strong>: dá para explicar exatamente por que ele chegou a uma conclusão. É por isso que essa abordagem continua sendo usada em áreas onde a decisão precisa ser explicável e auditável — crédito, saúde, direito, segurança industrial.</p>
+    </div>
+  </section>
+
+  <!-- 2. LÓGICA -->
+  <section id="logica">
+    <h2><span class="num">02</span>Lógica: a base mais rigorosa</h2>
+    <p class="lead-text">A forma mais formal de representar conhecimento é a <strong>lógica</strong>. Frases da linguagem natural viram proposições que podem ser verdadeiras ou falsas, e podem ser combinadas para se chegar a novas conclusões — exatamente como um raciocínio matemático.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <span class="tag logica">Lógica proposicional</span>
+        <h4>Frases inteiras como unidades</h4>
+        <p>Cada proposição é tratada como um bloco: "Chove" (P), "A rua está molhada" (Q). Combinações como <code>P → Q</code> (se chove, então a rua está molhada) permitem deduções simples.</p>
+      </div>
+      <div class="card">
+        <span class="tag logica">Lógica de predicados</span>
+        <h4>Entrando no detalhe dos objetos</h4>
+        <p>Permite falar sobre objetos, propriedades e relações: <code>Cliente(x) ∧ Renda(x) &gt; 5000 → Aprovado(x)</code>. É mais expressiva que a lógica proposicional, e é a base de muitos sistemas de regras.</p>
+      </div>
+    </div>
+
+    <p>Na prática, a maioria dos sistemas simbólicos usa uma forma simplificada de lógica: as <strong>regras de produção</strong>, no formato SE (condição) ENTÃO (conclusão) — fáceis de escrever, ler e explicar.</p>
+
+    <div class="rule-box">
+      <span class="cond">SE</span> febre = alta <span class="cond">E</span> tosse = presente <span class="cond">E</span> dificuldade_respirar = sim<br>
+      <span class="then">ENTÃO</span> encaminhar_urgencia = verdadeiro
+      <small>Regra de produção — a unidade básica de um sistema baseado em regras</small>
+    </div>
+
+    <h3>Vantagens e limitações</h3>
+    <table class="compare">
+      <thead><tr><th>Aspecto</th><th>Lógica / Regras de produção</th></tr></thead>
+      <tbody>
+        <tr><td>Vantagem principal</td><td>Raciocínio transparente e rigoroso — cada conclusão pode ser rastreada e explicada passo a passo.</td></tr>
+        <tr><td>Boa para</td><td>Domínios bem definidos, com regras claras e conhecidas (ex.: regulamentos, protocolos clínicos, políticas de crédito).</td></tr>
+        <tr><td>Limitação</td><td>Difícil manutenção em larga escala — centenas de regras podem entrar em conflito ou se tornar difíceis de gerenciar.</td></tr>
+        <tr><td>Limitação</td><td>Não lida bem com incerteza ou exceções não previstas nas regras originais.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. ÁRVORES DE DECISÃO -->
+  <section id="arvores">
+    <h2><span class="num">03</span>Árvores de decisão: regras organizadas visualmente</h2>
+    <p class="lead-text">Uma árvore de decisão é uma forma de organizar uma sequência de perguntas SE-ENTÃO em uma estrutura hierárquica. Cada nó interno é um teste sobre um atributo; cada ramo é uma resposta possível; cada folha é uma decisão final.</p>
+
+    <div class="diagram-box">
+      <svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Árvore de decisão para aprovação de crédito, com nós de teste sobre renda e histórico de dívidas, terminando em decisões de aprovar ou negar">
+        <g stroke="#B7C2CC" stroke-width="1.6" fill="none">
+          <line x1="350" y1="55" x2="180" y2="140"/>
+          <line x1="350" y1="55" x2="520" y2="140"/>
+          <line x1="180" y1="140" x2="90" y2="230"/>
+          <line x1="180" y1="140" x2="270" y2="230"/>
+          <line x1="520" y1="140" x2="440" y2="230"/>
+          <line x1="520" y1="140" x2="610" y2="230"/>
+        </g>
+        <!-- root -->
+        <rect x="270" y="25" width="160" height="56" rx="10" fill="#2D5F8A"/>
+        <text x="350" y="49" text-anchor="middle" font-size="13" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Renda mensal</text>
+        <text x="350" y="66" text-anchor="middle" font-size="12" fill="#DCE9F3" font-family="Source Sans 3, sans-serif">&gt; R$ 4.000?</text>
+
+        <text x="255" y="100" font-size="12" fill="#4A5568" font-family="Source Sans 3, sans-serif" font-style="italic">sim</text>
+        <text x="450" y="100" font-size="12" fill="#4A5568" font-family="Source Sans 3, sans-serif" font-style="italic">não</text>
+
+        <!-- level 2 -->
+        <rect x="105" y="112" width="150" height="54" rx="10" fill="#C9862E"/>
+        <text x="180" y="134" text-anchor="middle" font-size="12.5" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Histórico de</text>
+        <text x="180" y="150" text-anchor="middle" font-size="12.5" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">dívidas limpo?</text>
+
+        <rect x="445" y="112" width="150" height="54" rx="10" fill="#C9862E"/>
+        <text x="520" y="134" text-anchor="middle" font-size="12.5" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Possui</text>
+        <text x="520" y="150" text-anchor="middle" font-size="12.5" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">renda extra?</text>
+
+        <text x="115" y="200" font-size="12" fill="#4A5568" font-family="Source Sans 3, sans-serif" font-style="italic">sim</text>
+        <text x="225" y="200" font-size="12" fill="#4A5568" font-family="Source Sans 3, sans-serif" font-style="italic">não</text>
+        <text x="400" y="200" font-size="12" fill="#4A5568" font-family="Source Sans 3, sans-serif" font-style="italic">sim</text>
+        <text x="580" y="200" font-size="12" fill="#4A5568" font-family="Source Sans 3, sans-serif" font-style="italic">não</text>
+
+        <!-- leaves -->
+        <rect x="35" y="232" width="120" height="46" rx="23" fill="#3D6B4F"/>
+        <text x="95" y="260" text-anchor="middle" font-size="13" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Aprovar</text>
+
+        <rect x="215" y="232" width="120" height="46" rx="23" fill="#a94442"/>
+        <text x="275" y="260" text-anchor="middle" font-size="13" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Analisar</text>
+
+        <rect x="385" y="232" width="120" height="46" rx="23" fill="#3D6B4F"/>
+        <text x="445" y="260" text-anchor="middle" font-size="13" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Aprovar</text>
+
+        <rect x="555" y="232" width="120" height="46" rx="23" fill="#a94442"/>
+        <text x="615" y="260" text-anchor="middle" font-size="13" fill="#fff" font-family="Source Sans 3, sans-serif" font-weight="700">Negar</text>
+      </svg>
+      <p class="diagram-caption">Cada caminho da raiz até uma folha é, na prática, uma regra SE-ENTÃO: "SE renda &gt; R$4.000 E histórico limpo, ENTÃO aprovar". A árvore só organiza visualmente várias dessas regras.</p>
+    </div>
+
+    <h3>Como a árvore é construída</h3>
+    <p>Diferente das regras escritas à mão por um especialista, árvores de decisão costumam ser <strong>aprendidas automaticamente a partir de dados históricos</strong> — é um dos pontos de encontro entre o paradigma simbólico e o aprendizado de máquina. O algoritmo escolhe, a cada nó, o atributo que melhor separa os casos (por exemplo, quem pagou e quem não pagou o crédito), usando medidas como <strong>ganho de informação</strong> ou <strong>entropia</strong>.</p>
+
+    <div class="callout amber">
+      <strong>Por que isso é popular</strong>
+      <p>Árvores de decisão continuam entre os modelos mais usados em ciência de dados justamente pela combinação rara de <strong>alta interpretabilidade</strong> (dá para desenhar e explicar a árvore inteira) com <strong>bom desempenho</strong> em muitos problemas tabulares — como aprovação de crédito, triagem de risco e diagnóstico.</p>
+    </div>
+
+    <table class="compare">
+      <thead><tr><th>Aspecto</th><th>Árvore de decisão</th></tr></thead>
+      <tbody>
+        <tr><td>Vantagem principal</td><td>Fácil de visualizar, interpretar e explicar — inclusive para quem não é técnico.</td></tr>
+        <tr><td>Boa para</td><td>Classificação e decisões estruturadas a partir de atributos claros (idade, renda, sintomas, medições de sensores).</td></tr>
+        <tr><td>Limitação</td><td>Pode "decorar" os dados de treino (overfitting) se crescer demais — por isso costuma ser podada ou limitada em profundidade.</td></tr>
+        <tr><td>Limitação</td><td>Sozinha, tende a ser menos precisa que conjuntos de árvores (florestas aleatórias) em problemas complexos.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. SISTEMAS ESPECIALISTAS -->
+  <section id="especialistas">
+    <h2><span class="num">04</span>Sistemas especialistas: regras em ação</h2>
+    <p class="lead-text">Sistemas especialistas (SE) são programas projetados para reproduzir a capacidade de um especialista humano de resolver problemas em um domínio específico, como medicina ou finanças <em>(Lucas &amp; Van Der Gaag, 1991)</em>. Eles são a aplicação mais completa do raciocínio baseado em regras.</p>
+
+    <figure>
+      <img src="img/sistema-especialista-arquitetura.png" alt="Diagrama da arquitetura de um sistema especialista: especialista humano, engenheiro de conhecimento, base de conhecimento, motor de inferência (SE-ENTÃO) e interface com o usuário">
+      <figcaption>Arquitetura clássica de um Sistema Especialista: o conhecimento do especialista é formalizado pelo engenheiro de conhecimento e armazenado na base de conhecimento; o motor de inferência aplica as regras SE-ENTÃO para responder ao usuário através da interface.<span class="src">Fonte: material da disciplina — Princípios de IA Aplicados, UFPel</span></figcaption>
+    </figure>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>👩‍⚕️ Especialista + Engenheiro de conhecimento</h4>
+        <p>O especialista humano detém o conhecimento tácito. O engenheiro de conhecimento entrevista o especialista e traduz esse saber em regras formais — essa etapa é conhecida como <strong>aquisição de conhecimento</strong>, e costuma ser o gargalo mais trabalhoso do processo.</p>
+      </div>
+      <div class="card">
+        <h4>🗄️ Base de conhecimento</h4>
+        <p>É onde as regras (SE-ENTÃO) e os fatos do domínio ficam armazenados — separados da lógica de raciocínio, o que permite atualizar o conhecimento sem reescrever o programa inteiro.</p>
+      </div>
+      <div class="card">
+        <h4>⚙️ Motor de inferência</h4>
+        <p>É o componente que efetivamente "pensa": ele cruza os fatos apresentados com as regras da base de conhecimento e vai encadeando conclusões até chegar a uma resposta.</p>
+      </div>
+      <div class="card">
+        <h4>💬 Interface com o usuário</h4>
+        <p>Recebe as informações do usuário (sintomas, dados financeiros, medições) e devolve a conclusão do sistema — muitas vezes junto com uma explicação do raciocínio seguido.</p>
+      </div>
+    </div>
+
+    <h3>Duas formas de encadear regras</h3>
+    <div class="grid-2">
+      <div class="card">
+        <span class="tag especialista">Encadeamento para frente</span>
+        <h4>Forward chaining</h4>
+        <p>Parte dos <strong>fatos conhecidos</strong> e aplica regras até chegar a uma conclusão. É como ir juntando pistas: "sei que X e Y são verdade, quais regras se aplicam? Então Z também é verdade."</p>
+      </div>
+      <div class="card">
+        <span class="tag especialista">Encadeamento para trás</span>
+        <h4>Backward chaining</h4>
+        <p>Parte de uma <strong>hipótese a testar</strong> e busca, de trás para frente, quais fatos precisariam ser verdadeiros para sustentá-la. É como um investigador testando uma suspeita específica.</p>
+      </div>
+    </div>
+
+    <div class="callout plum">
+      <strong>Um exemplo que você já usou</strong>
+      <p>O jogo <a href="https://en.akinator.com/" target="_blank" rel="noopener">Akinator</a> é, na essência, um sistema especialista: uma sequência de perguntas SE-ENTÃO (encadeadas por uma extensa base de conhecimento sobre personagens) que vai estreitando as possibilidades até "adivinhar" quem você está pensando.</p>
+    </div>
+
+    <h3>Raciocínio Baseado em Casos (RBC): o primo próximo</h3>
+    <p>Uma variação interessante dos sistemas baseados em regras é o <strong>Raciocínio Baseado em Casos</strong>: em vez de aplicar regras gerais, o sistema busca na sua "memória" um caso passado parecido com o problema atual e adapta aquela solução <em>(Richter &amp; Weber, 2013)</em>. O primeiro sistema desse tipo, o Cyrus, foi criado por Janet Kolodner em 1983. A lógica por trás é simples: <strong>problemas parecidos tendem a ter soluções parecidas</strong>, e os tipos de problema tendem a se repetir.</p>
+  </section>
+
+  <!-- 5. APLICAÇÕES PRÁTICAS -->
+  <section id="aplicacoes">
+    <h2><span class="num">05</span>Da teoria à prática: três domínios clássicos</h2>
+    <p class="lead-text">Os mesmos três blocos — fatos, regras, motor de inferência — reaparecem em situações reais bem diferentes entre si. Veja como cada exemplo pedido se encaixa no que vimos.</p>
+
+    <h3>🩺 Triagem de sintomas</h3>
+    <p>Um sistema de triagem médica decide, a partir de sintomas relatados, qual o nível de urgência de um atendimento — um dos usos mais antigos e conhecidos de sistemas especialistas (o pioneiro histórico foi o MYCIN, criado na Universidade de Stanford nos anos 1970, para sugerir tratamentos de infecções bacterianas).</p>
+    <div class="rule-box">
+      <span class="cond">SE</span> febre = alta <span class="cond">E</span> falta_de_ar = sim<br>
+      <span class="then">ENTÃO</span> prioridade = emergência
+      <br><br>
+      <span class="cond">SE</span> febre = leve <span class="cond">E</span> falta_de_ar = não<br>
+      <span class="then">ENTÃO</span> prioridade = consulta_agendada
+      <small>Exemplo simplificado de regras de triagem — sistemas reais combinam dezenas de regras e, com frequência, pesos de incerteza</small>
+    </div>
+
+    <h3>💳 Aprovação de crédito</h3>
+    <p>Bancos e fintechs usam árvores de decisão e regras para decidir se aprovam um crédito, combinando renda, histórico e outros atributos. A grande vantagem aqui é a <strong>explicabilidade</strong>: por exigência regulatória, muitas instituições precisam justificar por que negaram um crédito — o que uma árvore de decisão ou um conjunto de regras consegue fazer com clareza, diferente de um modelo "caixa-preta".</p>
+
+    <h3>🔧 Diagnóstico de falhas</h3>
+    <p>Sistemas especialistas industriais ajudam técnicos a diagnosticar falhas em máquinas e equipamentos, cruzando sintomas (ruídos, temperaturas, códigos de erro) com uma base de conhecimento construída a partir da experiência de engenheiros seniores — preservando esse conhecimento mesmo quando o especialista se aposenta ou muda de empresa.</p>
+
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="icon">🩺</div>
+        <h4>Triagem de sintomas</h4>
+        <p><strong>Fatos:</strong> sintomas relatados pelo paciente<br><strong>Regras:</strong> protocolos clínicos<br><strong>Saída:</strong> nível de prioridade</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">💳</div>
+        <h4>Aprovação de crédito</h4>
+        <p><strong>Fatos:</strong> renda, histórico, dívidas<br><strong>Regras:</strong> política de risco do banco<br><strong>Saída:</strong> aprovar / negar / analisar</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🔧</div>
+        <h4>Diagnóstico de falhas</h4>
+        <p><strong>Fatos:</strong> sintomas da máquina<br><strong>Regras:</strong> experiência de engenheiros<br><strong>Saída:</strong> causa provável da falha</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. COMO ESCOLHER -->
+  <section id="escolher">
+    <h2><span class="num">06</span>Lógica, árvore ou sistema especialista?</h2>
+    <p class="lead-text">As três abordagens são complementares — muitas vezes um sistema especialista real usa lógica de regras <em>e</em> uma árvore de decisão internamente. Ainda assim, é útil saber quando cada uma se destaca:</p>
+
+    <table class="compare">
+      <thead><tr><th>Abordagem</th><th>Ponto forte</th><th>Quando usar</th></tr></thead>
+      <tbody>
+        <tr><td>Lógica / Regras</td><td>Rigor e transparência total</td><td>Conhecimento já bem definido em normas, protocolos ou políticas</td></tr>
+        <tr><td>Árvore de decisão</td><td>Aprende sozinha a partir de dados e é fácil de visualizar</td><td>Há uma base de dados histórica com exemplos de decisões passadas</td></tr>
+        <tr><td>Sistema especialista</td><td>Formaliza e preserva conhecimento tácito de especialistas</td><td>O conhecimento existe só "na cabeça" de profissionais experientes</td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision-box">
+      <h4>Roteiro rápido para decidir</h4>
+      <ol>
+        <li>Existem dados históricos suficientes e rotulados? Considere uma <strong>árvore de decisão</strong> (ou algoritmos derivados, como florestas aleatórias).</li>
+        <li>O conhecimento está apenas na experiência de especialistas humanos, sem uma base de dados pronta? Vale a pena investir em um <strong>sistema especialista</strong>, com entrevistas de aquisição de conhecimento.</li>
+        <li>A decisão precisa seguir normas ou regulamentos rígidos, auditáveis por lei? Prefira <strong>regras lógicas explícitas</strong>, mesmo que mais trabalhosas de manter.</li>
+        <li>O problema envolve muita incerteza ou dados incompletos? Vale complementar com representação probabilística (redes bayesianas, lógica difusa) — um paradigma vizinho a este.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SYNTHESIS -->
+  <section style="border-top:none; padding-top:10px;">
+    <div class="synthesis">
+      <h2>O que fica desta aula</h2>
+      <p class="lead-text">Representar conhecimento é transformar o que um especialista sabe em algo que uma máquina consegue usar para raciocinar — e o paradigma simbólico faz isso com lógica, regras e árvores de decisão.</p>
+      <ul>
+        <li><strong>Lógica e regras de produção (SE-ENTÃO)</strong> oferecem o raciocínio mais transparente e rigoroso que existe em IA.</li>
+        <li><strong>Árvores de decisão</strong> organizam essas regras visualmente e, com frequência, são aprendidas automaticamente a partir de dados.</li>
+        <li><strong>Sistemas especialistas</strong> combinam base de conhecimento e motor de inferência para reproduzir, de forma explicável, a tomada de decisão de um profissional experiente.</li>
+        <li>Os três aparecem juntos, na prática, em <strong>triagem de sintomas</strong>, <strong>aprovação de crédito</strong> e <strong>diagnóstico de falhas</strong> — sempre que a explicabilidade da decisão importa tanto quanto seu acerto.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7. RECURSOS -->
+  <section id="recursos">
+    <h2><span class="num">07</span>Para explorar depois da aula</h2>
+    <ul class="resource-list">
+      <li><span class="dot"></span><div><strong>Leitura complementar:</strong> Russell &amp; Norvig, <em>Artificial Intelligence: A Modern Approach</em> — capítulos sobre lógica e representação do conhecimento.</div></li>
+      <li><span class="dot"></span><div><strong>Referência histórica:</strong> Lucas, P. &amp; Van Der Gaag, L. (1991) — sistemas especialistas em medicina e finanças.</div></li>
+      <li><span class="dot"></span><div><strong>Raciocínio baseado em casos:</strong> Richter, M. &amp; Weber, R. (2013); Kolodner, J. (1983) — o sistema Cyrus.</div></li>
+      <li><span class="dot"></span><div><strong>Experimente:</strong> <a href="https://en.akinator.com/" target="_blank" rel="noopener">Akinator</a> — um sistema especialista disfarçado de jogo.</div></li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="institutional-footer">
+  <p>Material didático elaborado para a disciplina de Princípios de Inteligência Artificial Aplicados (15001103), UFPel, com apoio no material de aula "Paradigmas da Inteligência Artificial" — Agosto de 2026.</p>
+</footer>
+
+</body>
+</html>
