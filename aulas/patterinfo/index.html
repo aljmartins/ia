@@ -202,6 +202,11 @@
     margin: 32px 0 -4px;
   }
 
+  .leitura-4a { display: grid; gap: 10px; margin-top: 14px; }
+  .leitura-4a p { display: flex; gap: 12px; align-items: flex-start; }
+  .leitura-4a .sw { flex: 0 0 18px; height: 18px; border-radius: 4px; margin-top: 3px; }
+  .leitura-4a .sw.caixa { background: transparent; border: 3px solid #EB2D2D; }
+
   /* Synthesis */
   .synthesis { text-align: left; }
   .synthesis blockquote {
@@ -576,6 +581,20 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
         <img src="img/daninhas-mapa-prescricao.jpg" alt="A mesma lavoura em tons de cinza dividida em células de 1 metro, com as células que contêm daninhas pintadas de vermelho" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
         <figcaption>Figura 4b — Mapa de prescrição em células de 1 m: só as vermelhas recebem herbicida (33% da área, economia de 67%).</figcaption>
       </figure>
+    </div>
+
+    <div class="term-card" style="margin:8px 0 28px;">
+      <span class="kicker">Como ler a Figura 4a</span>
+      <h3>Uma lavoura vista de cima, já classificada pelo app</h3>
+      <p>A imagem é uma lavoura de soja simulada, fotografada de cima como faria um drone. Ela cobre um trecho de cerca de 9,6 × 6,4 metros, e cada pixel equivale a 1 centímetro de chão. As linhas de plantio estão inclinadas de propósito: o app descobre sozinho esse ângulo antes de procurar as linhas.</p>
+      <div class="leitura-4a">
+        <p><i class="sw" style="background:#8A6A4E;"></i><span><strong>Fundo marrom: solo.</strong> O índice de verde (ExG) apaga a terra e a palha. A faixa mais escura à esquerda é a sombra simulada do sol de lado, que o índice ignora.</span></p>
+        <p><i class="sw" style="background:#28BE5A;"></i><span><strong>Verde: a soja.</strong> É toda planta que ficou dentro da faixa de 20 cm ao redor de uma linha. O app pinta essa vegetação de verde para mostrar o que considerou cultura.</span></p>
+        <p><i class="sw" style="background:#FFE650;"></i><span><strong>Linhas amarelas: o eixo de cada linha de plantio.</strong> Foram encontradas somando o verde ao longo da direção das linhas; cada linha de plantio vira um pico regular, a cada 50 cm.</span></p>
+        <p><i class="sw caixa"></i><span><strong>Caixas vermelhas: as plantas daninhas.</strong> Planta verde fora da faixa da linha é planta fora do lugar. Cada caixa é uma mancha com pelo menos 20 cm².</span></p>
+      </div>
+      <p style="margin-top:12px;">Repare em como as caixas se distribuem. Elas se juntam em grupos, à esquerda e no centro: são as <strong>reboleiras</strong>, manchas onde a daninha se espalhou a partir de poucas plantas, como acontece no campo. Algumas caixas aparecem sozinhas, à direita — são daninhas isoladas. A maior parte da lavoura, sobretudo do centro para a direita, não tem nenhuma caixa: é exatamente a área que a Figura 4b deixa sem herbicida.</p>
+      <p style="margin-top:10px;">O que a figura <strong>não</strong> mostra também ensina. Daninhas que nasceram em cima da linha ficaram pintadas de verde, confundidas com a soja, porque têm a mesma cor e estão no mesmo lugar. No app, a conferência com o gabarito mostra quanto da daninha ficou escondido assim.</p>
     </div>
 
     <div class="callout" style="margin-top:0;">
