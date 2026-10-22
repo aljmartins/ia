@@ -23,6 +23,9 @@
     --code-ink: #E7EFE9;
     --card-bg: #FFFFFF;
     --shadow: 0 1px 2px rgba(28,30,27,0.06);
+    --sky: #2F6F9F;
+    --sky-soft: #E3EEF6;
+    --sky-cell: #FFFFFF;
     color-scheme: light;
   }
 
@@ -42,6 +45,9 @@
       --code-ink: #E7EFE9;
       --card-bg: #1E2219;
       --shadow: 0 1px 2px rgba(0,0,0,0.3);
+      --sky: #7FB8E0;
+      --sky-soft: #15232E;
+      --sky-cell: #1B2C38;
       color-scheme: dark;
     }
   }
@@ -60,6 +66,9 @@
     --code-ink: #E7EFE9;
     --card-bg: #1E2219;
     --shadow: 0 1px 2px rgba(0,0,0,0.3);
+    --sky: #7FB8E0;
+    --sky-soft: #15232E;
+    --sky-cell: #1B2C38;
     color-scheme: dark;
   }
 
@@ -206,6 +215,33 @@
   .leitura-4a p { display: flex; gap: 12px; align-items: flex-start; }
   .leitura-4a .sw { flex: 0 0 18px; height: 18px; border-radius: 4px; margin-top: 3px; }
   .leitura-4a .sw.caixa { background: transparent; border: 3px solid #EB2D2D; }
+
+  /* Caixa "Para ir além" (azul) */
+  .alem {
+    background: var(--sky-soft); border-left: 4px solid var(--sky); border-radius: 14px;
+    padding: 28px 30px; margin: 36px 0 8px;
+  }
+  .alem .kicker { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--sky);
+    text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 8px; }
+  .alem h3 { font-size: 1.35rem; margin: 0 0 10px; }
+  .alem h4 { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; margin: 26px 0 10px; color: var(--ink); }
+  .alem p { margin: 0 0 10px; color: var(--ink); font-size: 1rem; }
+  .matriz { display: grid; grid-template-columns: 9.5rem 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .matriz > div { background: var(--sky-cell); border-radius: 10px; padding: 12px 14px; font-size: 0.93rem; color: var(--ink-soft); }
+  .matriz > .cab { background: transparent; padding: 4px 6px; font-weight: 600; color: var(--sky); font-size: 0.9rem; display: flex; align-items: flex-end; }
+  .matriz > .lado { background: transparent; padding: 12px 6px; font-weight: 600; color: var(--sky); font-size: 0.9rem; }
+  .matriz strong { color: var(--ink); display: block; margin-bottom: 3px; }
+  .matriz .aqui { outline: 2px solid var(--sky); }
+  .familias { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; }
+  .familias p { font-size: 0.95rem; color: var(--ink-soft); margin: 0; }
+  .familias strong { color: var(--ink); }
+  @media (max-width: 760px) {
+    .alem { padding: 22px 18px; }
+    .matriz { grid-template-columns: 1fr 1fr; }
+    .matriz > .canto { display: none; }
+    .matriz > .lado { grid-column: 1 / -1; padding: 10px 2px 0; }
+    .familias { grid-template-columns: 1fr; }
+  }
 
   /* Synthesis */
   .synthesis { text-align: left; }
@@ -599,6 +635,36 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
 
     <div class="callout" style="margin-top:0;">
       <p>O limite do método geométrico aparece no gabarito: daninha que nasce dentro da linha tem a cor da soja e está no lugar da soja, então fica invisível. Separar as duas pelo formato da folha é trabalho para uma rede treinada — e é por isso que as etapas 02 e 03 existem.</p>
+    </div>
+
+    <div class="alem">
+      <span class="kicker">Para ir além</span>
+      <h3>Outras tecnologias, além de CVAT e YOLO</h3>
+      <p>O par CVAT + YOLO é só um dos caminhos. Duas perguntas ajudam a organizar o resto: <strong>o que o sistema enxerga</strong> — só “há uma planta viva aqui” ou “que planta é esta” — e <strong>quando decide</strong> — antes, com um mapa feito pelo drone, ou na hora, com o sensor na barra do pulverizador.</p>
+
+      <div class="matriz" role="table" aria-label="Tecnologias de controle de plantas daninhas por tipo de detecção e momento da decisão">
+        <div class="cab canto" role="columnheader"></div>
+        <div class="cab" role="columnheader">Decide antes (drone + mapa)</div>
+        <div class="cab" role="columnheader">Decide na hora (na barra)</div>
+
+        <div class="lado" role="rowheader">Enxerga só “planta viva”</div>
+        <div role="cell"><strong>Drone multiespectral</strong>Índices como o NDVI mapeiam manchas verdes no pousio ou grandes reboleiras na lavoura.</div>
+        <div role="cell"><strong>Sensores ópticos, sem IA</strong>Medem vermelho e infravermelho e abrem o bico ao ver clorofila. Ideais na dessecação antes do plantio (WeedSeeker, WEED-IT).</div>
+
+        <div class="lado" role="rowheader">Enxerga “que planta é”</div>
+        <div role="cell" class="aqui"><strong>Drone RGB + IA → prescrição</strong>O caminho deste infográfico: imagem, detecção (YOLO, segmentação ou o método do app) e mapa de aplicação.</div>
+        <div role="cell"><strong>Câmeras com IA na barra e robôs</strong>Decidem bico a bico em movimento (See &amp; Spray, One Smart Spray) ou trocam o herbicida por laser e robôs autônomos.</div>
+      </div>
+
+      <h4>Famílias de técnicas, das mais simples às mais novas</h4>
+      <div class="familias">
+        <p><strong>Processamento clássico.</strong> Índices de cor, limiares e geometria das linhas, como no app; ou análise baseada em objetos (OBIA), que agrupa pixels em regiões e as classifica por cor e forma.</p>
+        <p><strong>Aprendizado de máquina tradicional.</strong> Random Forest e SVM recebem medidas calculadas à mão — área, alongamento, textura — em vez de aprender direto dos pixels.</p>
+        <p><strong>Outras redes neurais.</strong> Segmentação (U-Net, DeepLab) classifica cada pixel em vez de desenhar caixas; a classificação de recortes rotula pedaços da imagem, como no trabalho da UFMS.</p>
+        <p><strong>Modelos sem treino específico.</strong> Modelos de fundação, como o SAM, e modelos de visão e linguagem recebem uma instrução em texto e tentam apontar as daninhas sem nenhuma anotação.</p>
+        <p><strong>Outros sensores.</strong> Câmeras hiperespectrais separam espécies pela assinatura de cor da folha; satélites cobrem áreas enormes, mas com pixels de 3 a 10 m, que não enxergam a planta individual.</p>
+        <p><strong>Anotar menos, ou nada.</strong> Label Studio e Roboflow substituem o CVAT; e as linhas de plantio podem gerar os rótulos sozinhas, como no trabalho de Bah e colegas.</p>
+      </div>
     </div>
   </section>
 
