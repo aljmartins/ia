@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visão computacional em campo: do futebol à lavoura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5EE;
+    --bg-raised: #FFFFFF;
+    --ink: #1C1E1B;
+    --ink-soft: #4A4F49;
+    --pitch-deep: #1F4D36;
+    --pitch-mid: #3D7A52;
+    --pitch-line: rgba(255,255,255,0.14);
+    --amber: #C9812E;
+    --amber-soft: #F3DCB8;
+    --rule: rgba(28,30,27,0.12);
+    --code-bg: #152019;
+    --code-ink: #E7EFE9;
+    --card-bg: #FFFFFF;
+    --shadow: 0 1px 2px rgba(28,30,27,0.06);
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14160F;
+      --bg-raised: #1B1E17;
+      --ink: #EDEBE2;
+      --ink-soft: #B7BBAE;
+      --pitch-deep: #16382A;
+      --pitch-mid: #2E5E40;
+      --pitch-line: rgba(255,255,255,0.10);
+      --amber: #E0A24F;
+      --amber-soft: #3A2E1A;
+      --rule: rgba(237,235,226,0.14);
+      --code-bg: #0D140F;
+      --code-ink: #E7EFE9;
+      --card-bg: #1E2219;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14160F;
+    --bg-raised: #1B1E17;
+    --ink: #EDEBE2;
+    --ink-soft: #B7BBAE;
+    --pitch-deep: #16382A;
+    --pitch-mid: #2E5E40;
+    --pitch-line: rgba(255,255,255,0.10);
+    --amber: #E0A24F;
+    --amber-soft: #3A2E1A;
+    --rule: rgba(237,235,226,0.14);
+    --code-bg: #0D140F;
+    --code-ink: #E7EFE9;
+    --card-bg: #1E2219;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html {
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+  section { padding: 72px 0; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+
+  .prose { max-width: 680px; }
+  .prose p { font-size: 1.05rem; color: var(--ink-soft); }
+  .prose.center { margin: 0 auto; }
+
+  /* Header */
+  .institutional-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px; padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    border-bottom: 1px solid var(--rule);
+    background: var(--bg-raised);
+    position: sticky; top: 0; z-index: 10;
+    font-size: 0.85rem; color: var(--ink-soft);
+  }
+  .header-identity { font-weight: 600; letter-spacing: 0.01em; }
+  .header-tag { font-size: 0.8rem; color: var(--ink-soft); }
+
+  /* Hero */
+  .lead {
+    padding-top: 56px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    margin-top: 32px;
+    background: var(--pitch-deep);
+    color: #F4F2E8;
+  }
+  .lead-inner { position: relative; z-index: 2; padding: 64px 40px 56px; }
+  .lead .eyebrow { color: #CFE3D4; font-size: 0.95rem; margin-bottom: 14px; }
+  .lead h1 { font-size: clamp(2.1rem, 5vw, 3.2rem); line-height: 1.08; margin: 0 0 20px; color: #FBFAF4; }
+  .lead p.sub { font-size: 1.15rem; color: #D8E6DA; max-width: 620px; margin: 0; }
+  .pitch-lines {
+    position: absolute; inset: 0; z-index: 1;
+  }
+
+  /* Concept section grid */
+  .concept-grid {
+    display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: start;
+  }
+  @media (max-width: 760px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .term-card {
+    background: var(--card-bg); border: 1px solid var(--rule); border-radius: 14px;
+    padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .term-card h3 { font-size: 1.05rem; margin: 0 0 6px; }
+  .term-card p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); }
+  .term-card .kicker { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--amber); text-transform: uppercase; letter-spacing: 0.06em; display:block; margin-bottom: 8px; }
+
+  /* Pipeline */
+  .pipeline-title { margin-bottom: 8px; }
+  .pipeline-wrap { overflow-x: auto; padding: 8px 0 20px; -webkit-overflow-scrolling: touch; }
+  .pipeline {
+    display: flex; gap: 0; min-width: 760px; align-items: stretch;
+  }
+  .pstep {
+    flex: 1; background: var(--card-bg); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 20px 18px; position: relative; margin-right: 34px; box-shadow: var(--shadow);
+  }
+  .pstep:last-child { margin-right: 0; }
+  .pstep:not(:last-child)::after {
+    content: "";
+    position: absolute; right: -32px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+    border-left: 10px solid var(--pitch-mid);
+  }
+  .pstep .num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--amber); display:block; margin-bottom: 10px; }
+  .pstep h4 { font-family: 'Fraunces', serif; font-size: 1.02rem; margin: 0 0 8px; }
+  .pstep p { font-size: 0.86rem; color: var(--ink-soft); margin: 0; }
+  .pstep .tool { display:inline-block; margin-top:10px; font-size: 0.72rem; font-family:'JetBrains Mono', monospace; color: var(--pitch-mid); background: var(--amber-soft); padding: 3px 8px; border-radius: 20px; }
+
+  /* Implications callout */
+  .callout {
+    background: var(--amber-soft); border-radius: 14px; padding: 28px 30px; margin: 28px 0;
+    border-left: 4px solid var(--amber);
+  }
+  .callout p { margin: 0; font-size: 1.02rem; color: var(--ink); font-style: italic; }
+
+  .usecases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; }
+  @media (max-width: 760px) { .usecases { grid-template-columns: 1fr; } }
+  .usecase { border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px; background: var(--card-bg); }
+  .usecase h4 { font-size: 0.95rem; margin: 0 0 6px; font-family: 'Inter'; font-weight: 600; }
+  .usecase p { font-size: 0.85rem; color: var(--ink-soft); margin: 0; }
+
+  /* Example / code section */
+  .example-badge {
+    display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--pitch-deep);
+    background: #D7E8DA; padding: 5px 11px; border-radius: 20px; margin-bottom: 16px;
+  }
+  :root[data-theme="dark"] .example-badge, @media (prefers-color-scheme: dark) { }
+  .code-block {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 12px;
+    padding: 20px 22px; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; line-height: 1.65; margin: 18px 0;
+    white-space: pre;
+  }
+  .code-block .c1 { color: #8FA895; } /* comments */
+  .code-block .s1 { color: #E0A24F; } /* strings */
+  .code-block .k1 { color: #7FB8E0; } /* keywords */
+  .code-label { font-size: 0.78rem; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; margin-bottom: -6px; }
+
+  /* Synthesis */
+  .synthesis { text-align: left; }
+  .synthesis blockquote {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 1.4rem; line-height: 1.4;
+    margin: 0; padding-left: 20px; border-left: 3px solid var(--pitch-mid); color: var(--ink);
+  }
+
+  /* Image placeholder */
+  figure.img-placeholder { margin: 28px 0; }
+  .placeholder-box {
+    border: 2px dashed var(--rule); background: var(--bg-raised); border-radius: 10px;
+    padding: 32px 24px; text-align: center; color: var(--ink-soft);
+    min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  }
+  .placeholder-icon { font-size: 2rem; }
+  .placeholder-label { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: var(--amber-soft); padding: 4px 10px; border-radius: 4px; color: var(--ink); }
+  .placeholder-hint { font-size: 0.8rem; color: var(--ink-soft); font-style: italic; max-width: 380px; }
+  figcaption { font-size: 0.82rem; color: var(--ink-soft); margin-top: 10px; text-align: center; }
+
+  footer.institutional-footer {
+    background: var(--bg-raised); border-top: 1px solid var(--rule);
+    padding: 28px 24px calc(28px + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+  }
+  footer.institutional-footer p { font-size: 0.8rem; color: var(--ink-soft); margin: 4px 0; }
+  .refs { max-width: 680px; margin: 0 auto 40px; }
+  .refs h3 { font-size: 0.95rem; margin-bottom: 10px; }
+  .refs ol { padding-left: 20px; margin: 0; }
+  .refs li { font-size: 0.84rem; color: var(--ink-soft); margin-bottom: 6px; }
+  .refs a { color: var(--pitch-mid); }
+
+  @media (max-width: 600px) {
+    section { padding: 48px 0; }
+    .lead-inner { padding: 44px 24px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="institutional-header">
+  <div class="header-identity">Princípios de Inteligência Artificial Aplicada &middot; UFPel</div>
+  <div class="header-tag">Material de aula</div>
+</header>
+
+<main>
+
+  <section class="lead" style="border-bottom:none;">
+    <svg class="pitch-lines" viewBox="0 0 800 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="400" fill="none"/>
+      <circle cx="650" cy="200" r="120" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+      <line x1="640" y1="0" x2="640" y2="400" stroke="var(--pitch-line)" stroke-width="2"/>
+      <circle cx="640" cy="200" r="4" fill="var(--pitch-line)"/>
+      <rect x="640" y="120" width="160" height="160" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+      <rect x="720" y="160" width="80" height="80" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+    </svg>
+    <div class="lead-inner">
+      <p class="eyebrow">Visão computacional &middot; Esporte &middot; Agronomia &middot; CVAT + YOLOv8</p>
+      <h1>Cada jogada vira linha de dados</h1>
+      <p class="sub">Como anotação assistida e detecção de objetos transformam um vídeo de partida em distância percorrida, posse de bola e mapas de calor — sem sensores, só câmera. E o mesmo raciocínio levado à lavoura, para achar plantas daninhas em fotos de drone.</p>
+    </div>
+  </section>
+
+  <section class="concept">
+    <div class="concept-grid">
+      <div class="prose">
+        <h2>O problema: um vídeo não sabe o que está vendo</h2>
+        <p>Uma transmissão de futebol é só uma sequência de quadros — pixels sem significado. Para transformar isso em estatística, um algoritmo precisa primeiro aprender a reconhecer o que cada região da imagem representa: ali é um jogador, ali é a bola, aquele é o árbitro.</p>
+        <p>Esse reconhecimento vem de dois componentes que se complementam: uma ferramenta para <strong>ensinar</strong> o que procurar, e um modelo que <strong>aprende</strong> a procurar sozinho depois.</p>
+      </div>
+      <div>
+        <div class="term-card">
+          <span class="kicker">Ferramenta de anotação</span>
+          <h3>CVAT</h3>
+          <p>Computer Vision Annotation Tool. Interface onde um humano desenha caixas delimitadoras (bounding boxes) ao redor de jogadores, árbitros e bola em quadros de vídeo — construindo o conjunto de exemplos que o modelo vai estudar.</p>
+        </div>
+        <div class="term-card">
+          <span class="kicker">Modelo de detecção</span>
+          <h3>YOLOv8</h3>
+          <p>"You Only Look Once" versão 8, da Ultralytics. Rede neural que localiza múltiplos objetos em uma imagem em uma única passada, rápida o suficiente para processar vídeo quadro a quadro.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pipeline">
+    <h2 class="pipeline-title">O pipeline, do vídeo bruto à planilha</h2>
+    <p class="prose" style="color:var(--ink-soft); font-size:1rem; margin-bottom:28px;">Cinco etapas conectam a câmera ao dado estatístico. Cada uma resolve um problema específico antes de passar a bola adiante para a próxima.</p>
+    <div class="pipeline-wrap">
+      <div class="pipeline">
+        <div class="pstep">
+          <span class="num">01</span>
+          <h4>Captura</h4>
+          <p>Vídeo de transmissão ou câmera fixa, dividido em quadros individuais para processamento.</p>
+          <span class="tool">OpenCV</span>
+        </div>
+        <div class="pstep">
+          <span class="num">02</span>
+          <h4>Anotação</h4>
+          <p>Amostra de quadros é rotulada manualmente — jogador, goleiro, árbitro, bola — para criar o dataset de treino.</p>
+          <span class="tool">CVAT</span>
+        </div>
+        <div class="pstep">
+          <span class="num">03</span>
+          <h4>Treinamento</h4>
+          <p>O dataset exportado no formato YOLO ajusta os pesos de um modelo pré-treinado para a tarefa específica.</p>
+          <span class="tool">YOLOv8</span>
+        </div>
+        <div class="pstep">
+          <span class="num">04</span>
+          <h4>Detecção + rastreio</h4>
+          <p>O modelo treinado detecta objetos em cada quadro; um algoritmo de rastreamento mantém a identidade de cada jogador entre quadros.</p>
+          <span class="tool">ByteTrack</span>
+        </div>
+        <div class="pstep">
+          <span class="num">05</span>
+          <h4>Estatística</h4>
+          <p>As trajetórias viram métricas: distância percorrida, velocidade, posse de bola, mapa de calor, formação tática.</p>
+          <span class="tool">Pandas</span>
+        </div>
+      </div>
+    </div>
+
+    <figure style="margin: 28px 0;">
+      <img src="img/frame-broadcast-deteccao.jpg" alt="Quadro de transmissão de futebol com caixas delimitadoras do YOLOv8 sobre jogadores, goleiro, árbitro e bola" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+      <figcaption>Figura 1 — Saída típica da etapa 04: detecção por classe em um quadro de transmissão.</figcaption>
+    </figure>
+  </section>
+
+  <section class="implications">
+    <div class="prose">
+      <h2>Por que isso importa além do laboratório</h2>
+      <p>O mesmo pipeline que detecta um jogador em uma imagem de treino já sustenta sistemas reais de análise tática. Projetos recentes combinam o YOLOv8 com algoritmos de rastreamento (como HybridSort ou ByteTrack) para manter a identidade de cada jogador entre quadros e, a partir disso, calculam métricas como velocidade, aceleração, distância total percorrida, estimativa de fadiga e estatísticas de posse de bola.</p>
+      <p>Outras implementações rodam o pipeline completo do vídeo bruto até uma visão tática em formato de radar, usando YOLOv8 para detecção e um classificador de times baseado em agrupamento visual das cores do uniforme, enquanto abordagens acadêmicas mais recentes buscam associações de jogadores entre quadros mais leves computacionalmente, para tornar a análise viável a partir de vídeo de transmissão comum — sem câmeras especializadas ou sistemas multi-câmera.</p>
+    </div>
+
+    <div class="callout">
+      <p>O ganho real não é "ver melhor" — é transformar horas de vídeo em uma tabela que pode ser filtrada, cruzada e comparada entre partidas.</p>
+    </div>
+
+    <div class="usecases">
+      <div class="usecase">
+        <h4>Análise tática</h4>
+        <p>Formação em campo, posicionamento médio e zonas de pressão, reconstruídos a partir das posições detectadas.</p>
+      </div>
+      <div class="usecase">
+        <h4>Desempenho físico</h4>
+        <p>Distância percorrida, picos de velocidade e sinais indiretos de fadiga ao longo da partida, por jogador.</p>
+      </div>
+      <div class="usecase">
+        <h4>Arbitragem assistida</h4>
+        <p>Modelos de detecção de jogadores e de pontos-chave do campo ajudam a reduzir erro humano em decisões que dependem de posicionamento, como impedimentos.</p>
+      </div>
+    </div>
+
+    <figure style="margin-top:28px;">
+      <img src="img/dashboard-estatisticas.png" alt="Painel com mapa de calor de um jogador, gráfico de distância percorrida e linha do tempo de posse de bola" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+      <figcaption>Figura 2 — Estatísticas finais da etapa 05, prontas para o estudo de caso ou relatório de desempenho.</figcaption>
+    </figure>
+  </section>
+
+  <section class="example">
+    <span class="example-badge">Exemplo de programação — parte separada</span>
+    <h2>Da teoria ao script: detectando e rastreando jogadores</h2>
+    <p class="prose" style="color:var(--ink-soft); font-size:1rem;">O trecho abaixo assume um dataset já anotado no CVAT e exportado no formato YOLO. Ele cobre o treino (etapa 03) e a detecção com rastreamento (etapa 04) — a base sobre a qual qualquer estatística da etapa 05 é calculada.</p>
+
+    <p class="code-label">1. Estrutura de pastas esperada após exportar do CVAT</p>
+    <div class="code-block">futebol_dataset/
+├── images/
+│   ├── train/
+│   └── val/
+├── labels/
+│   ├── train/
+│   └── val/
+└── data.yaml</div>
+
+    <p class="code-label">2. data.yaml</p>
+    <div class="code-block"><span class="k1">path</span>: ./futebol_dataset
+<span class="k1">train</span>: images/train
+<span class="k1">val</span>: images/val
+<span class="k1">names</span>:
+  0: bola
+  1: goleiro
+  2: jogador
+  3: arbitro</div>
+
+    <p class="code-label">3. Treinamento do modelo</p>
+    <div class="code-block"><span class="k1">from</span> ultralytics <span class="k1">import</span> YOLO
+
+model = YOLO(<span class="s1">"yolov8n.pt"</span>)  <span class="c1"># ponto de partida pré-treinado</span>
+model.train(
+    data=<span class="s1">"futebol_dataset/data.yaml"</span>,
+    epochs=<span class="s1">100</span>,
+    imgsz=<span class="s1">960</span>,  <span class="c1"># bola pequena pede imagem maior</span>
+    name=<span class="s1">"deteccao_futebol"</span>
+)</div>
+
+    <p class="code-label">4. Detecção + rastreamento quadro a quadro, com estatística simples</p>
+    <div class="code-block"><span class="k1">from</span> ultralytics <span class="k1">import</span> YOLO
+<span class="k1">import</span> supervision <span class="k1">as</span> sv
+<span class="k1">import</span> numpy <span class="k1">as</span> np
+
+model = YOLO(<span class="s1">"runs/detect/deteccao_futebol/weights/best.pt"</span>)
+tracker = sv.ByteTrack()
+
+distancia_por_jogador = {}  <span class="c1"># id do rastreamento -> metros percorridos</span>
+posicao_anterior = {}
+
+<span class="k1">for</span> resultado <span class="k1">in</span> model.track(
+    source=<span class="s1">"partida.mp4"</span>, stream=<span class="k1">True</span>, persist=<span class="k1">True</span>
+):
+    deteccoes = sv.Detections.from_ultralytics(resultado)
+    deteccoes = tracker.update_with_detections(deteccoes)
+
+    <span class="k1">for</span> box, track_id, classe <span class="k1">in</span> zip(
+        deteccoes.xyxy, deteccoes.tracker_id, deteccoes.class_id
+    ):
+        <span class="k1">if</span> classe != <span class="s1">2</span>:  <span class="c1"># só "jogador"</span>
+            <span class="k1">continue</span>
+        cx, cy = (box[<span class="s1">0</span>] + box[<span class="s1">2</span>]) / <span class="s1">2</span>, box[<span class="s1">3</span>]
+
+        <span class="k1">if</span> track_id <span class="k1">in</span> posicao_anterior:
+            dx, dy = cx - posicao_anterior[track_id][<span class="s1">0</span>], cy - posicao_anterior[track_id][<span class="s1">1</span>]
+            distancia_por_jogador[track_id] = distancia_por_jogador.get(track_id, <span class="s1">0</span>) + np.hypot(dx, dy)
+
+        posicao_anterior[track_id] = (cx, cy)</div>
+
+    <div class="callout" style="margin-top:0;">
+      <p>O valor de <code style="font-family:'JetBrains Mono',monospace; font-style:normal;">np.hypot(dx, dy)</code> aqui está em pixels — para virar metros reais, falta uma etapa de calibração que mapeia as coordenadas da imagem para as coordenadas do campo (homografia), algo que projetos como o Football-PitchVision resolvem combinando a detecção de pontos-chave do campo com a posição dos jogadores para gerar a visão tática em formato de radar.</p>
+    </div>
+
+    <p class="code-label" style="margin-top:28px;">5. Exemplo executável sem precisar instalar YOLOv8/PyTorch</p>
+    <p class="prose" style="color:var(--ink-soft); font-size:0.95rem;">Instalar o PyTorch pesa mais de 1,5&nbsp;GB e exige GPU para ser prático — inviável em muitos laboratórios de aula. O script abaixo isola exatamente a etapa 04/05 do pipeline (rastreamento + estatística), usando um "detector simulado" com ruído e falhas propositais no lugar do YOLOv8 real. A troca para vídeo de verdade é uma linha só: substituir o detector simulado pela chamada <code style="font-family:'JetBrains Mono',monospace; font-style:normal;">model.track(source="partida.mp4", ...)</code> do bloco 4 acima — o rastreador e as estatísticas continuam os mesmos.</p>
+
+    <div style="display:flex; gap:20px; flex-wrap:wrap; margin: 20px 0;">
+      <figure style="flex:1; min-width:280px; margin:0;">
+        <img src="img/trajetorias-simulacao.png" alt="Trajetórias de 5 jogadores simulados sobre o campo, geradas pelo rastreador" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+        <figcaption>Figura 3a — Saída real do script: trajetórias reconstruídas pelo rastreador por vizinho mais próximo, uma cor por track.</figcaption>
+      </figure>
+      <figure style="flex:1; min-width:280px; margin:0;">
+        <img src="img/distancia-por-jogador-simulacao.png" alt="Gráfico de barras com a distância percorrida por cada track simulado" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+        <figcaption>Figura 3b — Estatística calculada a partir das mesmas trajetórias: distância total por jogador.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="agro">
+    <span class="example-badge">Segundo estudo de caso — agronomia</span>
+    <h2>Do gramado à lavoura: plantas daninhas vistas por drone</h2>
+    <div class="prose">
+      <p>Troque a câmera de transmissão por um drone voando a 30 metros de altura e o gramado por um talhão de soja. O problema é o mesmo: uma imagem cheia de pixels sem significado, onde é preciso encontrar objetos específicos. Só que agora o objeto procurado é a planta daninha, que disputa água, luz e nutrientes com a cultura.</p>
+      <p>Hoje o controle mais comum é pulverizar herbicida na área inteira, mesmo onde não há daninha. Se a imagem mostrar onde ela está, o pulverizador só precisa abrir os bicos nesses pontos.</p>
+    </div>
+
+    <div class="usecases">
+      <div class="usecase">
+        <h4>O jogador vira a daninha</h4>
+        <p>No futebol, o detector procura pessoas. Na lavoura, procura plantas que não deveriam estar ali, separadas em folha larga e gramínea.</p>
+      </div>
+      <div class="usecase">
+        <h4>O rastreio vira a linha de plantio</h4>
+        <p>O rastreador usava a posição anterior para saber quem é quem. Na lavoura, a referência é a linha de semeadura: o que está fora dela é suspeito.</p>
+      </div>
+      <div class="usecase">
+        <h4>A distância vira mapa de prescrição</h4>
+        <p>A estatística final deixa de ser quilômetros por jogador e passa a ser uma grade do talhão dizendo onde aplicar herbicida.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:44px;">O pipeline na lavoura</h3>
+    <div class="pipeline-wrap">
+      <div class="pipeline">
+        <div class="pstep">
+          <span class="num">01</span>
+          <h4>Voo e captura</h4>
+          <p>Drone com câmera RGB fotografa o talhão de cima, com sobreposição entre fotos, no início do ciclo da cultura.</p>
+          <span class="tool">OpenDroneMap</span>
+        </div>
+        <div class="pstep">
+          <span class="num">02</span>
+          <h4>Anotação</h4>
+          <p>Recortes das fotos são rotulados como soja, folha larga, gramínea ou solo.</p>
+          <span class="tool">CVAT</span>
+        </div>
+        <div class="pstep">
+          <span class="num">03</span>
+          <h4>Treinamento</h4>
+          <p>Uma rede pré-treinada aprende a diferença de formato e textura entre a folha da cultura e a da daninha.</p>
+          <span class="tool">YOLOv8 / CNN</span>
+        </div>
+        <div class="pstep">
+          <span class="num">04</span>
+          <h4>Detecção</h4>
+          <p>O modelo marca as daninhas em cada foto. Sem modelo treinado, índice de verde e linhas de plantio já resolvem parte do problema.</p>
+          <span class="tool">OpenCV (ExG)</span>
+        </div>
+        <div class="pstep">
+          <span class="num">05</span>
+          <h4>Prescrição</h4>
+          <p>As detecções viram uma grade do talhão: cada célula recebe ou não herbicida, e o mapa vai para o pulverizador.</p>
+          <span class="tool">QGIS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="prose" style="margin-top:20px;">
+      <h3>Por que isso importa no campo</h3>
+      <p>No Brasil, um trabalho da UFMS fotografou lavouras de soja em Campo Grande com um drone DJI Phantom e montou um conjunto público com mais de 15 mil recortes de solo, soja, gramíneas e folhas largas. Redes convolucionais treinadas nesse material passaram de 99% de acerto médio na classificação, e o mesmo conjunto segue sendo usado em pesquisas recentes.</p>
+      <p>Anotar milhares de recortes à mão é caro. Pesquisadores franceses mostraram que dá para gerar os rótulos automaticamente usando as linhas de plantio — o que está fora da linha é daninha — e treinar a rede com eles, com resultados comparáveis aos de rótulos feitos por especialistas. É exatamente a ideia do app desta aula.</p>
+      <p>O ganho econômico já foi medido. Em testes da Universidade Estadual de Iowa, um mapa de daninhas feito por drone e carregado no pulverizador reduziu o uso de produto em cerca de 50%, sem diferença de produtividade em relação à aplicação em área total. Pulverizadores com câmeras na barra, que decidem bico a bico, registraram economia média de 59% em mais de 400 mil hectares de milho, soja e algodão em 2024.</p>
+    </div>
+
+    <div class="callout">
+      <p>O ganho real não é “achar a daninha” — é deixar de pulverizar o talhão inteiro para tratar só as manchas onde ela está.</p>
+    </div>
+
+    <p class="code-label" style="margin-top:28px;">6. O núcleo da detecção sem rede neural: índice de verde + linhas de plantio</p>
+    <div class="code-block"><span class="k1">import</span> cv2
+<span class="k1">import</span> numpy <span class="k1">as</span> np
+
+img = cv2.cvtColor(cv2.imread(<span class="s1">"talhao_drone.jpg"</span>), cv2.COLOR_BGR2RGB).astype(np.float32)
+soma = img.sum(axis=<span class="s1">2</span>) + <span class="s1">1e-6</span>
+r, g, b = img[..., <span class="s1">0</span>] / soma, img[..., <span class="s1">1</span>] / soma, img[..., <span class="s1">2</span>] / soma
+exg = <span class="s1">2</span> * g - r - b                       <span class="c1"># Excess Green: realça planta, apaga solo</span>
+
+u8 = cv2.normalize(exg, <span class="k1">None</span>, <span class="s1">0</span>, <span class="s1">255</span>, cv2.NORM_MINMAX).astype(np.uint8)
+_, planta = cv2.threshold(u8, <span class="s1">0</span>, <span class="s1">1</span>, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+<span class="c1"># com as linhas na vertical, cada linha de plantio vira um pico na soma das colunas</span>
+perfil = np.convolve(planta.sum(axis=<span class="s1">0</span>), np.ones(<span class="s1">9</span>) / <span class="s1">9</span>, mode=<span class="s1">"same"</span>)   <span class="c1"># suaviza</span>
+linhas = [x <span class="k1">for</span> x <span class="k1">in</span> range(<span class="s1">25</span>, len(perfil) - <span class="s1">25</span>)
+          <span class="k1">if</span> perfil[x] == perfil[x - <span class="s1">25</span>: x + <span class="s1">25</span>].max() > perfil[x - <span class="s1">1</span>]
+          <span class="k1">and</span> perfil[x] > perfil.mean()]
+
+faixa = np.zeros_like(planta)
+<span class="k1">for</span> x <span class="k1">in</span> linhas:
+    faixa[:, x - <span class="s1">10</span>: x + <span class="s1">10</span>] = <span class="s1">1</span>             <span class="c1"># 20 px de cada linha são cultura</span>
+
+daninha = planta & (<span class="s1">1</span> - faixa)                <span class="c1"># verde fora da linha = daninha</span></div>
+
+    <p class="code-label">7. Quando houver dados anotados, o mesmo YOLOv8 do futebol</p>
+    <div class="code-block"><span class="c1"># daninhas.yaml</span>
+<span class="k1">path</span>: ./daninhas_dataset
+<span class="k1">train</span>: images/train
+<span class="k1">val</span>: images/val
+<span class="k1">names</span>:
+  0: soja
+  1: folha_larga
+  2: graminea
+
+<span class="c1"># treino e uso</span>
+<span class="k1">from</span> ultralytics <span class="k1">import</span> YOLO
+model = YOLO(<span class="s1">"yolov8n.pt"</span>)
+model.train(data=<span class="s1">"daninhas.yaml"</span>, epochs=<span class="s1">100</span>, imgsz=<span class="s1">1024</span>)  <span class="c1"># folha pequena pede imagem grande</span>
+resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</div>
+
+    <p class="prose" style="color:var(--ink-soft); font-size:0.95rem;">O app da aula ganhou uma página com esse pipeline. Ele gera uma lavoura simulada, com linhas inclinadas, reboleiras de daninhas e iluminação irregular, ou recebe uma foto de drone de verdade. Como na simulação do futebol, a lavoura inventada tem gabarito, então o app mostra também quanto da daninha foi encontrado e quanto escapou.</p>
+
+    <div style="display:flex; gap:20px; flex-wrap:wrap; margin: 20px 0;">
+      <figure style="flex:1; min-width:280px; margin:0;">
+        <img src="img/daninhas-classificacao-simulacao.jpg" alt="Lavoura simulada vista de cima, com as linhas de soja marcadas em verde e amarelo e as plantas daninhas cercadas por caixas vermelhas" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+        <figcaption>Figura 4a — Saída do app: verde dentro da faixa da linha é cultura; verde fora dela é daninha (caixas vermelhas).</figcaption>
+      </figure>
+      <figure style="flex:1; min-width:280px; margin:0;">
+        <img src="img/daninhas-mapa-prescricao.jpg" alt="A mesma lavoura em tons de cinza dividida em células de 1 metro, com as células que contêm daninhas pintadas de vermelho" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+        <figcaption>Figura 4b — Mapa de prescrição em células de 1 m: só as vermelhas recebem herbicida (33% da área, economia de 67%).</figcaption>
+      </figure>
+    </div>
+
+    <div class="callout" style="margin-top:0;">
+      <p>O limite do método geométrico aparece no gabarito: daninha que nasce dentro da linha tem a cor da soja e está no lugar da soja, então fica invisível. Separar as duas pelo formato da folha é trabalho para uma rede treinada — e é por isso que as etapas 02 e 03 existem.</p>
+    </div>
+  </section>
+
+  <section class="synthesis" style="border-bottom:none;">
+    <h2>O que fica</h2>
+    <blockquote>CVAT ensina o modelo a olhar; YOLOv8 olha sozinho depois; o rastreamento dá nome e memória a cada jogador entre quadros — e é só nesse ponto que um vídeo de futebol começa a parecer uma planilha.</blockquote>
+    <blockquote style="margin-top:22px;">Na lavoura, a linha de plantio faz o papel da memória: ela diz onde a cultura deveria estar, e tudo que é verde fora dela vira uma célula vermelha no mapa de aplicação.</blockquote>
+  </section>
+
+  <section class="refs" style="padding-top:0; border-bottom:none;">
+    <h3>Fontes consultadas</h3>
+    <ol>
+      <li>MatchIQ — plataforma de análise de futebol com YOLOv8 e HybridSort. <a href="https://ir.iba.edu.pk/fyp-bscs/42" target="_blank" rel="noopener">ir.iba.edu.pk</a></li>
+      <li>Football-PitchVision — pipeline completo de detecção, rastreamento e visão tática. <a href="https://github.com/DesusLove/Football-PitchVision" target="_blank" rel="noopener">github.com</a></li>
+      <li>Detecção de jogadores e pontos-chave de campo para arbitragem assistida. <a href="https://archives.univ-eloued.dz/items/e18bcaa8-c725-440b-bab7-87dadeb3d7bb/full" target="_blank" rel="noopener">archives.univ-eloued.dz</a></li>
+      <li>YOLOv8n para análise de densidade espacial em vídeo de transmissão. <a href="https://dergipark.org.tr/tr/download/article-file/5805342" target="_blank" rel="noopener">dergipark.org.tr</a></li>
+      <li>FERREIRA, A. S.; PISTORI, H.; FREITAS, D. M.; SILVA, G. G. Data for: Weed detection in soybean crops using ConvNets. Mendeley Data, v. 2, 2017. <a href="https://data.mendeley.com/datasets/3fmjm7ncc6/2" target="_blank" rel="noopener">data.mendeley.com</a></li>
+      <li>FERREIRA, A. S. Redes neurais convolucionais profundas na detecção de plantas daninhas em lavoura de soja. Dissertação (Mestrado em Ciência da Computação) — UFMS, 2017. <a href="https://sigpos.ufms.br/portal/trabalho-arquivos/download/4249" target="_blank" rel="noopener">sigpos.ufms.br</a></li>
+      <li>BAH, M. D.; HAFIANE, A.; CANALS, R. Deep learning with unsupervised data labeling for weed detection in line crops in UAV images. Remote Sensing, v. 10, n. 11, 1690, 2018. <a href="https://arxiv.org/abs/1805.12395v1" target="_blank" rel="noopener">arxiv.org</a></li>
+      <li>WOEBBECKE, D. M.; MEYER, G. E.; VON BARGEN, K.; MORTENSEN, D. A. Color indices for weed identification under various soil, residue, and lighting conditions. Transactions of the ASAE, v. 38, n. 1, p. 259–269, 1995.</li>
+      <li>Iowa State University Extension. Drone-based weed mapping for targeted spraying. <a href="https://crops.extension.iastate.edu/post/drone-based-weed-mapping-targeted-spraying" target="_blank" rel="noopener">crops.extension.iastate.edu</a></li>
+      <li>John Deere. See &amp; Spray customers see 59% average herbicide savings in 2024. <a href="https://deere.com/en/news/all-news/see-spray-herbicide-savings" target="_blank" rel="noopener">deere.com</a></li>
+    </ol>
+  </section>
+
+</main>
+
+<footer class="institutional-footer">
+  <p>Material elaborado para a disciplina Princípios de Inteligência Artificial Aplicada, UFPel — Outubro de 2026.</p>
+</footer>
+
+</body>
+</html>
