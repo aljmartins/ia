@@ -323,8 +323,19 @@
           <h3>YOLOv8</h3>
           <p>"You Only Look Once" versão 8, da Ultralytics. Rede neural que localiza múltiplos objetos em uma imagem em uma única passada, rápida o suficiente para processar vídeo quadro a quadro.</p>
         </div>
+        <div class="term-card">
+          <span class="kicker">A arquitetura por trás de tudo isso</span>
+          <h3>Rede Neural Convolucional (CNN)</h3>
+          <p>YOLOv8, as redes da Blue River e praticamente todo detector de objetos de hoje são construídos sobre o mesmo princípio: uma CNN passa pequenos filtros (kernels) deslizando sobre a imagem, cada um aprendendo a reagir a um padrão visual específico. Nas primeiras camadas os filtros detectam bordas e contrastes simples; nas camadas seguintes, esses padrões simples se combinam em texturas, depois em formas, até que as últimas camadas já reconhecem partes inteiras de um objeto — uma pata, um bico de pulverização, a curva de uma semente.</p>
+          <p style="margin-top:10px;">Essa construção em camadas é o que permite treinar com relativamente poucos exemplos: a rede não aprende "o que é uma daninha" do zero a cada vez, ela reaproveita bordas e texturas que já sabe reconhecer de qualquer imagem — é a base técnica da transferência de aprendizado citada na seção do laboratório de sementes.</p>
+        </div>
       </div>
     </div>
+
+    <figure style="margin-top:28px;">
+      <img src="img/cnn-camadas-diagrama.jpg" alt="Diagrama em 4 painéis mostrando a progressão hierárquica de uma CNN, de bordas simples a um rótulo final de classificação" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
+      <figcaption>Figura 2b — Como uma CNN "enxerga" uma imagem: de bordas simples a um rótulo final, camada por camada.</figcaption>
+    </figure>
   </section>
 
   <section class="pipeline">
@@ -739,12 +750,8 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
       <p>"Captura" virou câmera industrial em vez de celular; "Anotação" virou milhões de imagens em vez de centenas; "Treinamento" virou GPU de datacenter em vez de notebook; e a saída da etapa 05 deixou de ser uma estatística para virar um comando elétrico. Entender o pipeline genérico deste material é, literalmente, entender por dentro um produto de US$ 305 milhões.</p>
     </div>
 
-    <figure class="img-placeholder" data-img-path="img/see-spray-barra-cameras.jpg">
-      <div class="placeholder-box">
-        <span class="placeholder-icon">🖼</span>
-        <p class="placeholder-label">[ Coloque aqui: img/see-spray-barra-cameras.jpg ]</p>
-        <p class="placeholder-hint">Descrição esperada: pulverizador agrícola autopropelido visto de lado, com a barra horizontal estendida sobre a lavoura; pequenas câmeras e caixas de processamento visíveis fixadas ao longo da barra, acima dos bicos de pulverização. Estética de fotografia industrial/agrícola real (não ilustração), luz de campo aberto, profundidade de campo que mantém a barra inteira em foco.</p>
-      </div>
+    <figure>
+      <img src="img/see-spray-barra-cameras.jpg" alt="Pulverizador agrícola com câmeras fixadas ao longo da barra de pulverização" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
       <figcaption>Figura 5 — A etapa 01 (captura) em escala comercial: câmeras distribuídas ao longo da barra do pulverizador.</figcaption>
     </figure>
   </section>
@@ -805,12 +812,8 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
       </div>
     </div>
 
-    <figure class="img-placeholder" data-img-path="img/pipeline-laboratorio-sementes.jpg" style="margin-top:28px;">
-      <div class="placeholder-box">
-        <span class="placeholder-icon">🖼</span>
-        <p class="placeholder-label">[ Coloque aqui: img/pipeline-laboratorio-sementes.jpg ]</p>
-        <p class="placeholder-hint">Diagrama horizontal de 6 etapas em sequência, estilo infográfico editorial, representando o fluxo: (1) câmera fotografando uma semente sobre fundo neutro com régua de escala, (2) grade de miniaturas da mesma semente em ângulos/variações diferentes, (3) pasta de arquivos organizada por espécie com uma etiqueta de rótulo, (4) uma rede neural simples esquematizada (nós e conexões) ao lado de um ícone de SVM, (5) uma matriz de confusão pequena com células coloridas, (6) uma câmera pequena acoplada a uma placa Raspberry Pi sobre uma bancada. Cada etapa dentro de um cartão com cantos arredondados, numerado de 01 a 06, conectado ao próximo por uma seta fina. Paleta terrosa e verde-oliva (tons de semente/solo), fundo bege claro, sem fotos reais de pessoas, estilo plano/vetorial consistente com o resto do material.</p>
-      </div>
+    <figure style="margin-top:28px;">
+      <img src="img/pipeline-laboratorio-sementes.jpg" alt="Diagrama de 6 etapas do pipeline proposto para o laboratório de sementes, do catálogo ao protótipo de bancada" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
       <figcaption>Figura 7 — O pipeline proposto em seis etapas, do catálogo atual ao protótipo de bancada.</figcaption>
     </figure>
 
@@ -827,12 +830,8 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
       <p>Para o resultado aplicado à ciência de sementes, o caminho natural é o <em>Journal of Seed Science</em> (publicado pela ABRATES) e a própria <em>Revista Brasileira de Engenharia Agrícola e Ambiental</em>, já citada nas referências. Para a parte de visão computacional e aprendizado de máquina aplicados à agricultura em geral, <em>Computers and Electronics in Agriculture</em> e <em>Precision Agriculture</em> concentram boa parte da produção internacional da área. No âmbito local, o SIIEPE (onde o catálogo já foi apresentado) e o Congresso Brasileiro da Ciência das Plantas Daninhas são vitrines diretas para o público que usaria a ferramenta.</p>
     </div>
 
-    <figure class="img-placeholder" data-img-path="img/sementario-ufpel-catalogo.jpg" style="margin-top:28px;">
-      <div class="placeholder-box">
-        <span class="placeholder-icon">🖼</span>
-        <p class="placeholder-label">[ Coloque aqui: img/sementario-ufpel-catalogo.jpg ]</p>
-        <p class="placeholder-hint">Descrição esperada: fotografia em bancada de laboratório de um pequeno grupo de sementes de plantas daninhas sobre fundo neutro contrastante (ex.: cartolina cinza ou preta), com régua ou marcador de escala visível ao lado; iluminação uniforme de estúdio/laboratório, foco nítido mostrando textura e formato de cada semente. Estética de fotografia científica de laboratório, não ilustração.</p>
-      </div>
+    <figure style="margin-top:28px;">
+      <img src="img/sementario-ufpel-catalogo.jpg" alt="Sementes de plantas daninhas fotografadas em condições controladas de bancada, com régua de escala" style="width:100%; border-radius:10px; border:1px solid var(--rule); display:block;">
       <figcaption>Figura 6 — O ponto de partida real do laboratório: sementes fotografadas em condições controladas de bancada.</figcaption>
     </figure>
   </section>
