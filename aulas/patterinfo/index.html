@@ -668,6 +668,175 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
     </div>
   </section>
 
+  <section class="blueriver">
+    <span class="example-badge">Terceiro estudo de caso — tecnologia proprietária</span>
+    <h2>Quando o pipeline vira produto: a Blue River e o See &amp; Spray</h2>
+    <div class="prose">
+      <p>Em 2011, dois pós-graduandos — Jorge Heraud, ex-executivo da Trimble, e Lee Redden, roboticista — se conheceram num curso de empreendedorismo em Stanford e fundaram a Blue River Technology, na Califórnia. O primeiro produto da empresa não pulverizava nada: era o "lettuce bot", um robô que fotografava mudas de alface recém-germinadas e descartava mecanicamente as que sobravam entre as que deveriam continuar crescendo — a mesma lógica de classificar planta por planta, só que a "atuação" da etapa 05 era uma lâmina, não um bico.</p>
+      <p>Em 2016 a empresa apresentou o See &amp; Spray — "ver e pulverizar". Em setembro de 2017, a John Deere comprou a Blue River por US$ 305 milhões, levando o pipeline inteiro para dentro de máquinas agrícolas de verdade — hoje operando em escala comercial em lavouras de milho, soja e algodão.</p>
+    </div>
+
+    <h3 style="margin-top:36px;">O mesmo pipeline, agora puxando um bico em vez de um gráfico</h3>
+    <p class="prose" style="color:var(--ink-soft); font-size:1rem; margin-bottom:28px;">As cinco etapas usadas no futebol e na lavoura simulada deste material aparecem de novo aqui — só que em escala industrial, e com uma saída física no lugar de uma estatística.</p>
+    <div class="pipeline-wrap">
+      <div class="pipeline-steps">
+        <div class="pstep">
+          <span class="num">01</span>
+          <h4>Captura</h4>
+          <p>Até 36 câmeras acopladas a uma barra de pulverização de dezenas de metros, cobrindo mais de 2.000 pés² por segundo enquanto a máquina avança.</p>
+          <span class="tool">Câmeras na barra</span>
+        </div>
+        <div class="pstep">
+          <span class="num">02</span>
+          <h4>Anotação em escala</h4>
+          <p>Milhões de imagens de campo já rotuladas como cultura ou daninha, acumuladas ao longo de anos de operação e reaproveitadas no retreino dos modelos.</p>
+          <span class="tool">Dataset proprietário</span>
+        </div>
+        <div class="pstep">
+          <span class="num">03</span>
+          <h4>Treinamento</h4>
+          <p>Redes convolucionais treinadas em GPU na nuvem, retreinadas continuamente à medida que entram novas condições de solo, luz e espécie de daninha.</p>
+          <span class="tool">CNN em nuvem</span>
+        </div>
+        <div class="pstep">
+          <span class="num">04</span>
+          <h4>Detecção + decisão</h4>
+          <p>Inferência embarcada em processadores NVIDIA Jetson, reforçados contra poeira e calor, decidindo cultura ou daninha planta a planta, em milissegundos.</p>
+          <span class="tool">Jetson (borda)</span>
+        </div>
+        <div class="pstep">
+          <span class="num">05</span>
+          <h4>Atuação</h4>
+          <p>Em vez de uma tabela, o resultado aciona bicos individuais do sistema ExactApply — resolução de pulverização inferior a 1 polegada.</p>
+          <span class="tool">ExactApply</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:44px;">Da dessecação ao meio da lavoura: a evolução do produto</h3>
+    <div class="usecases">
+      <div class="usecase">
+        <h4>See &amp; Spray Select (2021)</h4>
+        <p>Pulveriza em solo exposto ou pousio, antes do plantio — distinguir "verde" de "marrom" é uma tarefa de visão mais simples, o chamado green-on-brown.</p>
+      </div>
+      <div class="usecase">
+        <h4>See &amp; Spray Ultimate</h4>
+        <p>Pulveriza em meio à lavoura já formada, distinguindo a cultura da daninha entre duas plantas vivas — green-on-green, bem mais difícil de classificar.</p>
+      </div>
+      <div class="usecase">
+        <h4>Vision Processing Unit (2025)</h4>
+        <p>O hardware que roda tudo isso — até 12 entradas de câmera, blindado, resfriado a ar — passou a ser vendido separadamente para outros fabricantes.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:28px;">
+      <p>Em depoimento recente, o CTO da John Deere citou redução média de 77% no uso de herbicida; medições de campo em mais de 400 mil hectares de milho, soja e algodão em 2024 registraram economia média de 59%.</p>
+    </div>
+
+    <div class="term-card" style="margin-top:8px;">
+      <span class="kicker">Por que isso importa para quem estuda o pipeline</span>
+      <h3>O produto não inventou uma etapa nova</h3>
+      <p>"Captura" virou câmera industrial em vez de celular; "Anotação" virou milhões de imagens em vez de centenas; "Treinamento" virou GPU de datacenter em vez de notebook; e a saída da etapa 05 deixou de ser uma estatística para virar um comando elétrico. Entender o pipeline genérico deste material é, literalmente, entender por dentro um produto de US$ 305 milhões.</p>
+    </div>
+
+    <figure class="img-placeholder" data-img-path="img/see-spray-barra-cameras.jpg">
+      <div class="placeholder-box">
+        <span class="placeholder-icon">🖼</span>
+        <p class="placeholder-label">[ Coloque aqui: img/see-spray-barra-cameras.jpg ]</p>
+        <p class="placeholder-hint">Descrição esperada: pulverizador agrícola autopropelido visto de lado, com a barra horizontal estendida sobre a lavoura; pequenas câmeras e caixas de processamento visíveis fixadas ao longo da barra, acima dos bicos de pulverização. Estética de fotografia industrial/agrícola real (não ilustração), luz de campo aberto, profundidade de campo que mantém a barra inteira em foco.</p>
+      </div>
+      <figcaption>Figura 5 — A etapa 01 (captura) em escala comercial: câmeras distribuídas ao longo da barra do pulverizador.</figcaption>
+    </figure>
+  </section>
+
+  <section class="labufpel">
+    <span class="example-badge">Pipeline de pesquisa — laboratório da UFPel</span>
+    <h2>Do catálogo ao classificador: um caminho para o Laboratório de Sementes da FAEM</h2>
+    <div class="prose">
+      <p>A UFPel já tem o ingrediente que costuma faltar num projeto de reconhecimento de padrões: um acervo real. O Laboratório de Ciência e Tecnologia de Sementes, da Faculdade de Agronomia Eliseu Maciel (FAEM/UFPel), fotografou cerca de 450 sementes do seu sementário e organizou, em 2025, uma plataforma digital que reúne essas imagens por família, espécie, cor, tamanho e forma — hoje um catálogo pesquisável, ainda não um classificador automático.</p>
+      <p>A distância entre o que já existe e um pipeline de reconhecimento de padrões como os das seções anteriores é menor do que parece: o catálogo já resolveu a parte mais cara, que é ter imagens organizadas por espécie. Falta ensinar um modelo a olhar para uma semente nova e reconhecer sozinho a que espécie ela pertence.</p>
+    </div>
+
+    <div class="term-card" style="margin-top:8px;">
+      <span class="kicker">Por que sementes são um bom ponto de partida</span>
+      <h3>Mais controlado que planta em campo</h3>
+      <p>Uma foto de semente em bancada tem fundo controlado, iluminação fixa e escala conhecida — o oposto da variação visual de um talhão fotografado por drone, com sombra, vento e folhas sobrepostas. É um problema de classificação mais restrito, ideal para validar o pipeline inteiro antes de levar a câmera para o campo.</p>
+    </div>
+
+    <h3 style="margin-top:44px;">O pipeline proposto</h3>
+    <div class="pipeline-wrap">
+      <div class="pipeline-steps">
+        <div class="pstep">
+          <span class="num">01</span>
+          <h4>Padronizar a captura</h4>
+          <p>Fixar câmera, fundo neutro contrastante e um marcador de escala em todo novo registro do sementário, para que as fotos futuras sejam comparáveis entre si.</p>
+          <span class="tool">Protocolo de bancada</span>
+        </div>
+        <div class="pstep">
+          <span class="num">02</span>
+          <h4>Ampliar e balancear</h4>
+          <p>Hoje são ~450 fotos divididas entre dezenas de espécies — poucas unidades cada. Fotografar mais ângulos por semente e aplicar aumento de dados (rotação, espelho, brilho) antes de treinar qualquer modelo.</p>
+          <span class="tool">Data augmentation</span>
+        </div>
+        <div class="pstep">
+          <span class="num">03</span>
+          <h4>Rotular formalmente</h4>
+          <p>Migrar a planilha do Excel para um formato de dataset (uma pasta por espécie, ou anotação no CVAT se cada semente ainda precisar ser localizada dentro da foto do frasco).</p>
+          <span class="tool">CVAT</span>
+        </div>
+        <div class="pstep">
+          <span class="num">04</span>
+          <h4>Extrair atributos e treinar</h4>
+          <p>Comparar um classificador clássico (cor, forma e textura, como Padrões Binários Locais, alimentando um SVM) com uma rede convolucional pré-treinada ajustada por transferência de aprendizado — poucos exemplos por classe favorecem a segunda opção.</p>
+          <span class="tool">SVM / CNN</span>
+        </div>
+        <div class="pstep">
+          <span class="num">05</span>
+          <h4>Validar por espécie</h4>
+          <p>Medir o acerto espécie a espécie, não só a média geral — famílias de daninhas com sementes parecidas tendem a se confundir, e é isso que decide se o sistema é confiável.</p>
+          <span class="tool">Matriz de confusão</span>
+        </div>
+        <div class="pstep">
+          <span class="num">06</span>
+          <h4>Do catálogo ao protótipo</h4>
+          <p>Ligar o classificador treinado a uma bancada simples (câmera + Raspberry Pi) que reconhece uma semente nova ao vivo — o mesmo papel que a câmera do drone cumpre na lavoura, e a câmera da barra cumpre no See &amp; Spray.</p>
+          <span class="tool">Raspberry Pi</span>
+        </div>
+      </div>
+    </div>
+
+    <figure class="img-placeholder" data-img-path="img/pipeline-laboratorio-sementes.jpg" style="margin-top:28px;">
+      <div class="placeholder-box">
+        <span class="placeholder-icon">🖼</span>
+        <p class="placeholder-label">[ Coloque aqui: img/pipeline-laboratorio-sementes.jpg ]</p>
+        <p class="placeholder-hint">Diagrama horizontal de 6 etapas em sequência, estilo infográfico editorial, representando o fluxo: (1) câmera fotografando uma semente sobre fundo neutro com régua de escala, (2) grade de miniaturas da mesma semente em ângulos/variações diferentes, (3) pasta de arquivos organizada por espécie com uma etiqueta de rótulo, (4) uma rede neural simples esquematizada (nós e conexões) ao lado de um ícone de SVM, (5) uma matriz de confusão pequena com células coloridas, (6) uma câmera pequena acoplada a uma placa Raspberry Pi sobre uma bancada. Cada etapa dentro de um cartão com cantos arredondados, numerado de 01 a 06, conectado ao próximo por uma seta fina. Paleta terrosa e verde-oliva (tons de semente/solo), fundo bege claro, sem fotos reais de pessoas, estilo plano/vetorial consistente com o resto do material.</p>
+      </div>
+      <figcaption>Figura 7 — O pipeline proposto em seis etapas, do catálogo atual ao protótipo de bancada.</figcaption>
+    </figure>
+
+    <div class="callout" style="margin-top:28px;">
+      <p>O ganho não é só automatizar uma tarefa manual — é abrir a porta para um uso didático contínuo: alunos de Agronomia que hoje consultam o catálogo passam a poder treinar modelos, comparar acurácia por espécie e publicar os resultados.</p>
+    </div>
+
+    <div class="alem">
+      <span class="kicker">Onde procurar</span>
+      <h3>Literatura e dados para continuar o projeto</h3>
+      <h4>Bancos de imagens públicos para comparar</h4>
+      <p>O conjunto da UFMS já citado nas referências (soja, folha larga e gramínea, fotografado por drone) serve de comparação direta por já ser brasileiro e sobre cultura de interesse regional. O DeepWeeds, da James Cook University, tem 17.509 imagens rotuladas de 8 espécies de daninhas de pastagens australianas e é a referência mais usada para testar modelos de classificação de daninhas por espécie — útil como benchmark de metodologia, mesmo com espécies diferentes das do sementário.</p>
+      <h4>Periódicos e eventos para publicar</h4>
+      <p>Para o resultado aplicado à ciência de sementes, o caminho natural é o <em>Journal of Seed Science</em> (publicado pela ABRATES) e a própria <em>Revista Brasileira de Engenharia Agrícola e Ambiental</em>, já citada nas referências. Para a parte de visão computacional e aprendizado de máquina aplicados à agricultura em geral, <em>Computers and Electronics in Agriculture</em> e <em>Precision Agriculture</em> concentram boa parte da produção internacional da área. No âmbito local, o SIIEPE (onde o catálogo já foi apresentado) e o Congresso Brasileiro da Ciência das Plantas Daninhas são vitrines diretas para o público que usaria a ferramenta.</p>
+    </div>
+
+    <figure class="img-placeholder" data-img-path="img/sementario-ufpel-catalogo.jpg" style="margin-top:28px;">
+      <div class="placeholder-box">
+        <span class="placeholder-icon">🖼</span>
+        <p class="placeholder-label">[ Coloque aqui: img/sementario-ufpel-catalogo.jpg ]</p>
+        <p class="placeholder-hint">Descrição esperada: fotografia em bancada de laboratório de um pequeno grupo de sementes de plantas daninhas sobre fundo neutro contrastante (ex.: cartolina cinza ou preta), com régua ou marcador de escala visível ao lado; iluminação uniforme de estúdio/laboratório, foco nítido mostrando textura e formato de cada semente. Estética de fotografia científica de laboratório, não ilustração.</p>
+      </div>
+      <figcaption>Figura 6 — O ponto de partida real do laboratório: sementes fotografadas em condições controladas de bancada.</figcaption>
+    </figure>
+  </section>
+
   <section class="synthesis" style="border-bottom:none;">
     <h2>O que fica</h2>
     <blockquote>CVAT ensina o modelo a olhar; YOLOv8 olha sozinho depois; o rastreamento dá nome e memória a cada jogador entre quadros — e é só nesse ponto que um vídeo de futebol começa a parecer uma planilha.</blockquote>
@@ -687,6 +856,14 @@ resultado = model.predict(<span class="s1">"ortomosaico_recorte.jpg"</span>)</di
       <li>WOEBBECKE, D. M.; MEYER, G. E.; VON BARGEN, K.; MORTENSEN, D. A. Color indices for weed identification under various soil, residue, and lighting conditions. Transactions of the ASAE, v. 38, n. 1, p. 259–269, 1995.</li>
       <li>Iowa State University Extension. Drone-based weed mapping for targeted spraying. <a href="https://crops.extension.iastate.edu/post/drone-based-weed-mapping-targeted-spraying" target="_blank" rel="noopener">crops.extension.iastate.edu</a></li>
       <li>John Deere. See &amp; Spray customers see 59% average herbicide savings in 2024. <a href="https://deere.com/en/news/all-news/see-spray-herbicide-savings" target="_blank" rel="noopener">deere.com</a></li>
+      <li>DCVC. John Deere acquires Blue River Technology for $305 million, bringing full-stack AI to agriculture. <a href="https://www.dcvc.com/news-insights/john-deere-acquires-blue-river-technology-for-305-million-bringing-full-stack-ai-to-agriculture/" target="_blank" rel="noopener">dcvc.com</a></li>
+      <li>NVIDIA Blog. How robotics and machine learning are transforming the future of farming — entrevista com Jorge Heraud sobre o uso do Jetson no See &amp; Spray. <a href="https://blogs.nvidia.com/?p=42649" target="_blank" rel="noopener">blogs.nvidia.com</a></li>
+      <li>Fierce Electronics. Deere shows off smart weed control machine that relies on AI with Nvidia chip. <a href="https://www.fierceelectronics.com/electronics/deere-shows-off-smart-weed-control-machine-relies-ai-nvidia-chip" target="_blank" rel="noopener">fierceelectronics.com</a></li>
+      <li>AI Magazine. John Deere: sowing the seeds of AI (citação do CTO Jahmy Hindman sobre redução de 77% no uso de herbicida). Nov. 2025. <a href="https://publication.aimagazine.com/ai-magazine-november-2025/0057357001761670083/p103" target="_blank" rel="noopener">publication.aimagazine.com</a></li>
+      <li>John Deere Electronics. Vision Processing Unit (VPU) — hardware por trás do See &amp; Spray, hoje oferecido a outros fabricantes. <a href="https://www.deere.com/en/electronics/autonomy" target="_blank" rel="noopener">deere.com</a></li>
+      <li>Mississippi State University Extension. See &amp; Spray Technology (P3904) — histórico das versões Select e Ultimate. <a href="https://extension.msstate.edu/publications/see-spray-technology" target="_blank" rel="noopener">extension.msstate.edu</a></li>
+      <li>OLSEN, A. et al. DeepWeeds: A Multiclass Weed Species Image Dataset for Deep Learning. Scientific Reports, v. 9, 2019. <a href="https://arxiv.org/abs/1810.05726v2" target="_blank" rel="noopener">arxiv.org</a></li>
+      <li>SANTOS, M. M. F.; OLIVEIRA, J. R. F.; TUNES, L. V. M. Sistema computacional para identificação taxonômica de sementes de espécies invasoras. Anais do SIIEPE, UFPel, 2025. <a href="https://anais-siiepe.ufpel.edu.br/2025/CA_06969.pdf" target="_blank" rel="noopener">anais-siiepe.ufpel.edu.br</a></li>
     </ol>
   </section>
 
